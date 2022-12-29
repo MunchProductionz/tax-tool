@@ -27,6 +27,7 @@ def calculate_profit(transactions, order, fiat):
 
     # Validations
     if not isValidOrder(order): return None                         # TODO: Fix error handling
+    if not isValidFiat(fiat): return None                           # TODO: Fix error handling
 
     # Define transaction
     index_date = 0
@@ -106,6 +107,20 @@ def calculate_profit(transactions, order, fiat):
 
 
 
-# Helper methods
+### Helper methods ###
+
 def isValidOrder(order):
     return order == "FIFO" or order == "LIFO"
+
+def isValidFiat(fiat):
+    
+    valid_fiats = [
+        "USD",
+        "GBP",
+        "NOK"
+    ]
+
+    if fiat in valid_fiats:
+        return True
+
+    return False
