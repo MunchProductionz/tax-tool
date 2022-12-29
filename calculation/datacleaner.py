@@ -29,6 +29,6 @@ def get_transactions_from_files(files):
         exchange = file[index_exchange]
         file_data = file[index_file_data]
         file_transactions = get_transactions_from_file(exchange, file_data)
-        transactions.append(file_transactions)                      # TODO: Check that transactions are merged
+        transactions += file_transactions                      # TODO: Check that transactions are merged
 
     return transactions
