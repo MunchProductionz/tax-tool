@@ -45,6 +45,8 @@ class BinanceReader:
 
     def read_file(filedata):
         
+        # Excel
+
         # Read filedata
         # Put data into transactions-format
         # Return transactions
@@ -56,6 +58,8 @@ class CoinbaseReader:
 
     def read_file(filedata):
         
+        # CSV
+
         # Read filedata
         # Put data into transactions-format
         # Return transactions
