@@ -5,10 +5,6 @@
 # - read_file
 # - *initialize_exchange_readers?
 
-readers = {
-
-}
-
 
 ### Methods ###
 
@@ -68,6 +64,11 @@ class CoinbaseReader:
 
 # ...
 
+
+readers = {
+    "Binance": BinanceReader(),
+    "Coinbase": CoinbaseReader()
+}
 
 
 

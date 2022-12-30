@@ -1,11 +1,12 @@
 #Filer:
 # / Overview
-# Readers
-# Datacleaner
+# / Readers
+# X Datacleaner
 # X Datastructures
 # / Priceretriever
 # X Calculation (Add features, fix TODOs)
-# Writer
+# / Writer
+# Visualization
 
 from readers import get_files
 from datacleaner import get_transactions_from_files
