@@ -53,10 +53,15 @@ def calculate_profit(transactions, order, fiat):
     index_transaction_date = 0
     index_transaction_profit = 1
 
+    # Define orders
+    orders = {
+        "FIFO": Queue(),
+        "LIFO": Stack()
+    }
+
     # Initialize datastructures and variables
     for currency in unique_currencies:
-        if order == "FIFO": amounts[currency] = Queue()
-        if order == "LIFO" : amounts[currency] = Stack()
+        amounts[currency] = orders[order]
         transaction_profits[currency] = []
         currency_profits[currency] = 0
 
