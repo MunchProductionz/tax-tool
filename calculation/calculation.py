@@ -26,8 +26,8 @@ from priceretriever import get_price
 def calculate_profit(transactions, order, fiat):
 
     # Validations
-    if not isValidOrder(order): return None                         # TODO: Fix error handling
-    if not isValidFiat(fiat): return None                           # TODO: Fix error handling
+    if not isValidOrder(order): raise ValueError("Invalid order.")          # TODO: Test error handling
+    if not isValidFiat(fiat): raise ValueError("Invalid fiat.")             # TODO: Test error handling
 
     # Define transaction
     index_date = 0
@@ -53,6 +53,11 @@ def calculate_profit(transactions, order, fiat):
     index_transaction_date = 0
     index_transaction_profit = 1
 
+    # Define datastructures
+    index_amounts_date = 0
+    index_amounts_amount = 1
+
+    # TODO: Append lists [amount, date] to datastructure
     # Define orders
     orders = {
         "FIFO": Queue(),
@@ -87,26 +92,33 @@ def calculate_profit(transactions, order, fiat):
         while temporary_amount_sold > 0:
             
             # Copy stored element amount
-            temporary_amount_currency_sold = amounts[currency_sold].dequeue()
+            temporary_date_currency_sold, temporary_amount_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
+            
+            # Get price of stored element
+            fiat_price_of_temporary_date_currency_sold = get_price(temporary_date_currency_sold, currency_sold, fiat)
             
             # If stored element amount > sold amount (Base case)
             if temporary_amount_currency_sold >= temporary_amount_sold:
                 temporary_amount_currency_sold -= temporary_amount_sold
-                element_profit = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
+                cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
+                income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
+                element_profit = income_sold - cost_bought
                 transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
                 currency_profits[currency_sold] += element_profit
-                amounts[currency_sold].re_enqueue(temporary_amount_currency_sold)
+                amounts[currency_sold].re_enqueue([temporary_date_currency_sold, temporary_amount_currency_sold])
                 temporary_amount_sold = 0
-                break                                                   # TODO: Check if it breaks while-loop
+                break
 
             # If stored element amount < sold amount
-            element_profit = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
+            cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
+            income_sold = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
+            element_profit = income_sold - cost_bought
             transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
             currency_profits[currency_sold] += element_profit
             temporary_amount_sold -= temporary_amount_currency_sold     # TODO: Fix case where sold amount > stored amount (infinite runs)
 
         # Update amount of currency bought
-        amounts[currency_bought].enqueue(amount_bought)
+        amounts[currency_bought].enqueue([date, amount_bought])
 
     return amounts, transaction_profits, currency_profits
 
