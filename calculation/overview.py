@@ -27,3 +27,11 @@ def run():
     amounts, transaction_profits, currency_profits = calculate_profit(transactions, order, fiat)
     write_to_excel(transactions, transaction_profits, currency_profits)
     visualize(transactions, amounts, transaction_profits, currency_profits)
+
+
+# Things to do:
+# - Get files
+# - Specify readers
+# - Get prices (scraping or API)
+# - Write to file (to excel)
+# - Visualize on website
