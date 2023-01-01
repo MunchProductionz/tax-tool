@@ -1,3 +1,5 @@
+import pandas as pd
+
 #Functions:
 # - *Define readers ({exchange: <reader>})
 # - get_files
@@ -46,6 +48,11 @@ class BinanceReader:
     def read_file(filedata):
         
         # Excel
+        uncleaned_data = pd.read_excel(filedata)
+        # data = pd.read_excel(r'Path where the Excel file is stored\File name.xlsx')
+
+        cleaned_data = uncleaned_data[["Date(UTC)"]]
+        cleaned_data
 
         # Read filedata
         # Put data into transactions-format
