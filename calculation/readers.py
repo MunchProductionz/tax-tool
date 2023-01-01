@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 #Functions:
 # - *Define readers ({exchange: <reader>})
@@ -49,12 +50,10 @@ class BinanceReader:
         
         # Excel
         # uncleaned_data = pd.read_excel(filedata)      # TODO: Implement if possible to input file
-        uncleaned_data = pd.read_excel(r'.\.\files\Binance Order History Spot.xlsx')
-
+        uncleaned_data = pd.read_excel(r'..\files\Binance_Order_History_Spot.xlsx')
         print(uncleaned_data.head())
     
         cleaned_data = uncleaned_data[["Date(UTC)"]]
-        cleaned_data
 
         # Read filedata
         # Put data into transactions-format
@@ -85,7 +84,7 @@ readers = {
 
 
 reader = BinanceReader()
-reader.read_file("Test")
+reader.read_file()
 
 
 ### Helper methods ###
