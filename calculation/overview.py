@@ -32,6 +32,6 @@ def run():
 # Things to do:
 # - Get files
 # - Specify readers
-# - Get prices (scraping or API)
-# - Write to file (to excel)
+# - / Get prices (scraping or API)
+# - / Write to file (to excel)
 # - Visualize on website
