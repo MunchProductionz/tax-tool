@@ -48,9 +48,11 @@ class BinanceReader:
     def read_file(filedata):
         
         # Excel
-        uncleaned_data = pd.read_excel(filedata)
-        # data = pd.read_excel(r'Path where the Excel file is stored\File name.xlsx')
+        # uncleaned_data = pd.read_excel(filedata)      # TODO: Implement if possible to input file
+        uncleaned_data = pd.read_excel(r'.\.\files\Binance Order History Spot.xlsx')
 
+        print(uncleaned_data.head())
+    
         cleaned_data = uncleaned_data[["Date(UTC)"]]
         cleaned_data
 
@@ -81,6 +83,9 @@ readers = {
     "Coinbase": CoinbaseReader()
 }
 
+
+reader = BinanceReader()
+reader.read_file("Test")
 
 
 ### Helper methods ###
