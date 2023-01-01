@@ -12,10 +12,13 @@ def write_to_excel(transactions, transaction_profits, currency_profits):
     workbook, transactions_sheet, assets_sheet = initialize_workbook_and_worksheets()
     
     # Formatting
-    bold = workbook.add_format({'bold': 1})
+    format = {
+        "sheet_header": workbook.add_format({'bold': 1, 'font_size': 14}),
+        "column_header": workbook.add_format({'bold': 1, 'bottom': 1})
+    }
 
     # Fix worksheets
-    write_transactions_sheet(transactions, transaction_profits, transactions_sheet, bold)
+    write_transactions_sheet(transactions, transaction_profits, transactions_sheet, format)
     write_assets_sheet(transactions, currency_profits, assets_sheet)
 
     # Profit per transaction
@@ -33,28 +36,30 @@ def write_to_excel(transactions, transaction_profits, currency_profits):
 
     return None
 
-def write_transactions_sheet(transactions, transactions_profits, sheet, bold):
+def write_transactions_sheet(transactions, transactions_profits, sheet, format):
+    
     
     # Write headers
-    sheet.write('B4', "Date", bold)
-    sheet.write('C4', "Currency Sold", bold)
-    sheet.write('D4', "Amound Sold", bold)
-    sheet.write('E4', "Price Sold", bold)
-    sheet.write('F4', "Currency Bought", bold)
-    sheet.write('G4', "Amount Bought", bold)
-    sheet.write('H4', "Price Bought", bold)
+    sheet.write('B2', "Transactions", format["sheet_header"])
+    sheet.write('B4', "Date", format["column_header"])
+    sheet.write('C4', "Currency Sold", format["column_header"])
+    sheet.write('D4', "Amound Sold", format["column_header"])
+    sheet.write('E4', "Price Sold", format["column_header"])
+    sheet.write('F4', "Currency Bought", format["column_header"])
+    sheet.write('G4', "Amount Bought", format["column_header"])
+    sheet.write('H4', "Price Bought", format["column_header"])
     
     # Write transactions
-    transaction_number = 0
-    while transaction_number < len(transactions):
-        transaction_row = transaction_number + 5        # Starts at row 5
-        sheet.write('B' + str(transaction_row), transactions[transaction_number][transaction_index["date"]])
-        sheet.write('C' + str(transaction_row), transactions[transaction_number][transaction_index["currency_sold"]])
-        sheet.write('D' + str(transaction_row), transactions[transaction_number][transaction_index["amount_sold"]])
-        sheet.write('E' + str(transaction_row), transactions[transaction_number][transaction_index["price_sold"]])
-        sheet.write('F' + str(transaction_row), transactions[transaction_number][transaction_index["currency_bought"]])
-        sheet.write('G' + str(transaction_row), transactions[transaction_number][transaction_index["amount_bought"]])
-        sheet.write('H' + str(transaction_row), transactions[transaction_number][transaction_index["price_bought"]])
+    row = 5                                # Starts at row 5 (+1)
+    for transaction in transactions:
+        sheet.write('B' + str(row), transaction[transaction_index["date"]])
+        sheet.write('C' + str(row), transaction[transaction_index["currency_sold"]])
+        sheet.write('D' + str(row), transaction[transaction_index["amount_sold"]])
+        sheet.write('E' + str(row), transaction[transaction_index["price_sold"]])
+        sheet.write('F' + str(row), transaction[transaction_index["currency_bought"]])
+        sheet.write('G' + str(row), transaction[transaction_index["amount_bought"]])
+        sheet.write('H' + str(row), transaction[transaction_index["price_bought"]])
+        row += 1
     
     return None
 
@@ -95,6 +100,7 @@ cleaned_transactions = [cleaned_transaction_1, cleaned_transaction_2]
 transaction_profits = {"BTC": ["01/01/2023", 10000]}
 currency_profits = {"BTC": 10000}
 
+write_to_excel(cleaned_transactions, transaction_profits, currency_profits)
 
 
 
