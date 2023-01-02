@@ -46,7 +46,8 @@ def calculate_profit(transactions, order, fiat):
 
     # Initialize dictionaries
     amounts = dict()
-    transaction_profits = dict()
+    transaction_profits = list()
+    currency_transaction_profits = dict()
     currency_profits = dict()
 
     # Define transaction_profits
@@ -67,9 +68,11 @@ def calculate_profit(transactions, order, fiat):
     # Initialize datastructures and variables
     for currency in unique_currencies:
         amounts[currency] = orders[order]
-        transaction_profits[currency] = []
+        currency_transaction_profits[currency] = []
         currency_profits[currency] = 0
 
+    # Make calculation per transaction
+    counter = 0
     for transaction in transactions:
         
         date = transaction[index_date]
@@ -81,8 +84,9 @@ def calculate_profit(transactions, order, fiat):
         price_bought = transaction[index_price_bought]
 
         # Initialize transaction profit of currency sold ([date, transaction_profit])
-        transaction_profits[currency_sold].append[date, 0]
-        index_transaction = len(transaction_profits[currency_sold]) - 1
+        transaction_profits.append(0)
+        currency_transaction_profits[currency_sold].append[date, 0]
+        index_transaction = len(currency_transaction_profits[currency_sold]) - 1
 
         # Get price of currency sold
         fiat_price_of_currency_sold = get_price(date, currency_sold, fiat)
@@ -103,7 +107,8 @@ def calculate_profit(transactions, order, fiat):
                 cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
                 income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
                 element_profit = income_sold - cost_bought
-                transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
+                transaction_profits[counter] += element_profit
+                currency_transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
                 currency_profits[currency_sold] += element_profit
                 amounts[currency_sold].re_enqueue([temporary_date_currency_sold, temporary_amount_currency_sold])
                 temporary_amount_sold = 0
@@ -113,14 +118,17 @@ def calculate_profit(transactions, order, fiat):
             cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
             income_sold = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
             element_profit = income_sold - cost_bought
-            transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
+            currency_transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
             currency_profits[currency_sold] += element_profit
             temporary_amount_sold -= temporary_amount_currency_sold     # TODO: Fix case where sold amount > stored amount (infinite runs)
 
         # Update amount of currency bought
         amounts[currency_bought].enqueue([date, amount_bought])
+        
+        # Update counter
+        counter += 1
 
-    return amounts, transaction_profits, currency_profits
+    return amounts, transaction_profits, currency_transaction_profits, currency_profits
 
 
 

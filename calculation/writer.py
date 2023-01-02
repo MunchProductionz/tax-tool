@@ -61,6 +61,8 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
         sheet.write('H' + str(row), transaction[transaction_index["price_bought"]])
         row += 1
     
+    print('Transaction sheet completed.')    
+    
     return None
 
 def write_assets_sheet(transactions, currency_profits, sheet):
