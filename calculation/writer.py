@@ -6,20 +6,18 @@ import xlsxwriter
 # Transaction_profits: {[currency]: [date, profit], ...}
 # Currency_profits: {[currency]: profit, ...}
 
-def write_to_excel(transactions, transaction_profits, currency_profits):
+def write_to_excel(transactions, transaction_profits, transaction_currency_profits, currency_profits):
 
     # Initialization
-    workbook, transactions_sheet, assets_sheet = initialize_workbook_and_worksheets()
+    workbook, transactions_sheet, results_sheet, assets_sheet = initialize_workbook_and_worksheets()
     
     # Formatting
-    format = {
-        "sheet_header": workbook.add_format({'bold': 1, 'font_size': 14}),
-        "column_header": workbook.add_format({'bold': 1, 'bottom': 1})
-    }
+    format = get_format(workbook)
 
     # Fix worksheets
     write_transactions_sheet(transactions, transaction_profits, transactions_sheet, format)
-    write_assets_sheet(transactions, currency_profits, assets_sheet)
+    write_results_sheet(transactions, transaction_currency_profits, results_sheet, format)
+    write_assets_sheet(transactions, currency_profits, assets_sheet, format)
 
     # Profit per transaction
     # - Write each transaction to a new line in excel
@@ -38,7 +36,6 @@ def write_to_excel(transactions, transaction_profits, currency_profits):
 
 def write_transactions_sheet(transactions, transactions_profits, sheet, format):
     
-    
     # Write headers
     sheet.write('B2', "Transactions", format["sheet_header"])
     sheet.write('B4', "Date", format["column_header"])
@@ -48,6 +45,10 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
     sheet.write('F4', "Currency Bought", format["column_header"])
     sheet.write('G4', "Amount Bought", format["column_header"])
     sheet.write('H4', "Price Bought", format["column_header"])
+    sheet.write('I4', "Profit", format["column_header"])
+    
+    # Set column-width
+    sheet.set_column(1, 8, 20)
     
     # Write transactions
     row = 5                                # Starts at row 5 (+1)
@@ -59,13 +60,18 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
         sheet.write('F' + str(row), transaction[transaction_index["currency_bought"]])
         sheet.write('G' + str(row), transaction[transaction_index["amount_bought"]])
         sheet.write('H' + str(row), transaction[transaction_index["price_bought"]])
+        sheet.write('I' + str(row), transaction_profits[row - 5])                       # List starts at index 0
         row += 1
     
     print('Transaction sheet completed.')    
     
     return None
 
-def write_assets_sheet(transactions, currency_profits, sheet):
+def write_results_sheet(transactions, transaction_currency_profits, sheet, format):
+    
+    return None
+
+def write_assets_sheet(transactions, currency_profits, sheet, format):
     
     return None
 
@@ -85,11 +91,19 @@ transaction_index = {
 def initialize_workbook_and_worksheets():
     workbook = xlsxwriter.Workbook('tax_info.xlsx')
     transactions_sheet = workbook.add_worksheet('Transactions')
+    results_sheet = workbook.add_worksheet('Results')
     assets_sheet = workbook.add_worksheet('Assets')
     
-    return workbook, transactions_sheet, assets_sheet
+    return workbook, transactions_sheet, results_sheet, assets_sheet
 
+def get_format(workbook):
+    
+    format = {
+        "sheet_header": workbook.add_format({'bold': 1, 'font_size': 14}),
+        "column_header": workbook.add_format({'bold': 1, 'bottom': 1})
+    }
 
+    return format
 
 ### Testing ###
 
@@ -99,10 +113,11 @@ cleaned_transaction_1 = ["01/01/2023", "BTC", 0.5, 25000, "USD", 12500, 1]
 cleaned_transaction_2 = ["02/01/2023", "USD", 5000, 1, "USD", 0.25, 20000]
 cleaned_transactions = [cleaned_transaction_1, cleaned_transaction_2]
 
-transaction_profits = {"BTC": ["01/01/2023", 10000]}
+transaction_profits = [10000, 0]
+transaction_currency_profits = {"BTC": ["01/01/2023", 10000]}
 currency_profits = {"BTC": 10000}
 
-write_to_excel(cleaned_transactions, transaction_profits, currency_profits)
+write_to_excel(cleaned_transactions, transaction_profits, transaction_currency_profits, currency_profits)
 
 
 
