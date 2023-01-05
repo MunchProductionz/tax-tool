@@ -40,7 +40,7 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
     sheet.write('B2', "Transactions", format["sheet_header"])
     sheet.write('B4', "Date", format["column_header"])
     sheet.write('C4', "Currency Sold", format["column_header"])
-    sheet.write('D4', "Amound Sold", format["column_header"])
+    sheet.write('D4', "Amount Sold", format["column_header"])
     sheet.write('E4', "Price Sold", format["column_header"])
     sheet.write('F4', "Currency Bought", format["column_header"])
     sheet.write('G4', "Amount Bought", format["column_header"])
@@ -48,7 +48,28 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
     sheet.write('I4', "Profit", format["column_header"])
     
     # Set column-width
-    sheet.set_column(1, 8, 20)
+    sheet.set_column(1, 1, 12)
+    sheet.set_column(2, 2, 15, format["center_align"])
+    sheet.set_column(3, 3, 12)
+    sheet.set_column(4, 4, 12)
+    sheet.set_column(5, 5, 17, format["center_align"])
+    sheet.set_column(6, 6, 15)
+    sheet.set_column(7, 7, 12)
+    sheet.set_column(8, 8, 10, format["center_align"])
+    
+    # Set conditional format when profit > 0
+    sheet.conditional_format('I5:I200', {
+                                            'type': 'cell',
+                                            'criteria': '>',
+                                            'value': 0,
+                                            'format': format["green"]})
+    
+    # Set conditional format when profit < 0
+    sheet.conditional_format('I5:I200', {
+                                            'type': 'cell',
+                                            'criteria': '<',
+                                            'value': 0,
+                                            'format': format["red"]})
     
     # Write transactions
     row = 5                                # Starts at row 5 (+1)
@@ -60,7 +81,7 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
         sheet.write('F' + str(row), transaction[transaction_index["currency_bought"]])
         sheet.write('G' + str(row), transaction[transaction_index["amount_bought"]])
         sheet.write('H' + str(row), transaction[transaction_index["price_bought"]])
-        sheet.write('I' + str(row), transaction_profits[row - 5])                       # List starts at index 0
+        sheet.write('I' + str(row), transactions_profits[row - 5])                       # List starts at index 0
         row += 1
     
     print('Transaction sheet completed.')    
@@ -100,7 +121,10 @@ def get_format(workbook):
     
     format = {
         "sheet_header": workbook.add_format({'bold': 1, 'font_size': 14}),
-        "column_header": workbook.add_format({'bold': 1, 'bottom': 1})
+        "column_header": workbook.add_format({'bold': 1, 'bottom': 1}),
+        "center_align": workbook.add_format({'align': 'center'}),
+        "green": workbook.add_format({'bg_color': '#C6EFCE', 'font_color': '#006100'}),
+        "red": workbook.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
     }
 
     return format
