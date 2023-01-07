@@ -152,6 +152,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     # Get indexes
     amount_index = get_amount_index()
     column_index = get_column_index()
+    transaction_index = get_transaction_index()
     
     # Write headers
     sheet.write('B2', "Assets", format["sheet_header"])
@@ -223,9 +224,27 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         column += 2
     
     # Update assets per transaction
-    
-    
-    
+    row = 8         # Starts at row 8
+    column = 11     # Starts at column L
+    for transaction in transactions:
+        
+        # Get column of currency bought and sold
+        in_column = currency_in_column[transaction[transaction_index["currency_bought"]]]
+        out_column = currency_in_column[transaction[transaction_index["currency_sold"]]] + 1
+        
+        # Get cells of transaction
+        cell_date = column_index[column] + str(row)
+        cell_currency_bought = column_index[in_column] + str(row)
+        cell_currency_sold = column_index[out_column] + str(row)
+        
+        # Write date, amount bought and amount sold of transaction
+        sheet.write(cell_date, transaction[transaction_index["date"]], format["center_align"])
+        sheet.write(cell_currency_bought, transaction[transaction_index["amount_bought"]], format["center_align"])
+        sheet.write(cell_currency_sold, transaction[transaction_index["amount_sold"]], format["center_align"])
+        
+        row += 1
+        
+        
     print('Assets sheet completed.') 
     
     return None
@@ -321,6 +340,29 @@ def get_column_index():
     }
     
     return column_index
+
+def get_orders():
+    
+    # Define orders
+    orders = {
+        "FIFO": Queue(),
+        "LIFO": Stack()
+    }
+    
+    return orders
+
+def get_unique_currencies(transactions):
+    
+    transaction_index = get_transaction_index()
+    
+    # Find unique currencies
+    unique_currencies = set()
+    for transaction in transactions:
+        if transaction[transaction_index["currency_sold"]] not in unique_currencies: unique_currencies.add(transaction_index["currency_sold"])
+        if transaction[transaction_index["currency_bought"]] not in unique_currencies: unique_currencies.add(transaction_index["currency_bought"])
+
+    return unique_currencies
+
 
 ### Testing ###
 
