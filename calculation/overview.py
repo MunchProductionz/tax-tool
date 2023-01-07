@@ -25,7 +25,7 @@ def run():
     files = get_files()
     transactions = get_transactions_from_files(files)
     amounts, transaction_profits, currency_profits = calculate_profit(transactions, order, fiat)
-    write_to_excel(transactions, transaction_profits, currency_profits)
+    write_to_excel(transactions, amounts, transaction_profits, currency_profits)
     visualize(transactions, amounts, transaction_profits, currency_profits)
 
 

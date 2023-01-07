@@ -1,4 +1,6 @@
 import xlsxwriter
+from datastructures import Stack
+from datastructures import Queue
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
@@ -6,7 +8,7 @@ import xlsxwriter
 # Transaction_profits: {[currency]: [date, profit], ...}
 # Currency_profits: {[currency]: profit, ...}
 
-def write_to_excel(transactions, transaction_profits, transaction_currency_profits, currency_profits):
+def write_to_excel(transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits):
 
     # Initialization
     workbook, transactions_sheet, results_sheet, assets_sheet = initialize_workbook_and_worksheets()
@@ -14,13 +16,14 @@ def write_to_excel(transactions, transaction_profits, transaction_currency_profi
     # Formatting
     format = get_format(workbook)
     
-    # Create chart object
+    # Create charts
     bar_chart = get_bar_chart(workbook)
+    pie_chart = get_pie_chart(workbook)
 
     # Fix worksheets
     write_transactions_sheet(transactions_sheet, transactions, transaction_profits, format)
     write_results_sheet(results_sheet, currency_profits, format, bar_chart)
-    write_assets_sheet(assets_sheet, transactions, currency_profits, format)
+    write_assets_sheet(assets_sheet, transactions, amounts, currency_profits, format, pie_chart)
 
     # Profit per transaction
     # - Write each transaction to a new line in excel
@@ -138,11 +141,42 @@ def write_results_sheet(sheet, currency_profits, format, bar_chart):
     
     return None
 
-def write_assets_sheet(sheet, transactions, currency_profits, format):
+def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, pie_chart):
     
     # Update assets per transaction
     # Show sum of assets after all transactions
     # Allow for initial asset inputs?
+    
+    # Write headers
+    sheet.write('B2', "Assets", format["sheet_header"])
+    sheet.write('B4', "Currency", format["column_header"])
+    sheet.write('C4', "Amount", format["column_header"])
+    
+    # Set column-width
+    sheet.set_column(1, 1, 12)
+    sheet.set_column(2, 2, 15, format["center_align"])
+    
+    # Write amount of currencies
+    row = 5         # Starts at row 6 (5+1)
+    for currency, amount in amounts.items():
+        sheet.write('B' + str(row), currency)
+        sheet.write('C' + str(row), amount.dequeue()[amount_index['amount']])
+        row += 1
+    
+    # TODO: Use get_price() to get current value of amounts, use values to create pie chart
+    
+    # Add series to the pie chart
+    pie_chart.add_series({
+        'name': '=Assets!$B$2',
+        'categories': '=Assets!$B$5:$B$' + str(row),
+        'values': '=Assets!$C$5:$C$' + str(row),
+        'data_labels': {'value': True, 'num_format': '#,##0.00'}
+    })
+    
+    # Insert chart into sheet
+    sheet.insert_chart('D4', pie_chart)
+    
+    print('Assets sheet completed.') 
     
     return None
 
@@ -157,6 +191,11 @@ transaction_index = {
     "price_bought": 6
 }
 
+# Define amounts
+amount_index = {
+    "date": 0,
+    "amount": 1
+}
 
 ### Helper Methods ###
 def initialize_workbook_and_worksheets():
@@ -183,20 +222,26 @@ def get_bar_chart(workbook):
     
     return workbook.add_chart({'type': 'bar'})
 
+def get_pie_chart(workbook):
+    
+    return workbook.add_chart({'type': 'pie'})
+
 
 ### Testing ###
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
 cleaned_transaction_1 = ["01/01/2023", "BTC", 0.5, 25000, "USD", 12500, 1]
-cleaned_transaction_2 = ["02/01/2023", "USD", 5000, 1, "USD", 0.25, 20000]
+cleaned_transaction_2 = ["02/01/2023", "USD", 5000, 1, "BTC", 0.25, 20000]
 cleaned_transactions = [cleaned_transaction_1, cleaned_transaction_2]
 
+amounts = {"BTC": Stack()}
+amounts["BTC"].enqueue(["01/01/2023", 0.25])
 transaction_profits = [10000, 0]
 transaction_currency_profits = {"BTC": ["01/01/2023", 10000]}
 currency_profits = {"BTC": 10000, "ETH": -5000}
 
-write_to_excel(cleaned_transactions, transaction_profits, transaction_currency_profits, currency_profits)
+write_to_excel(cleaned_transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits)
 
 
 
