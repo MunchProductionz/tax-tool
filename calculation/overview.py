@@ -5,7 +5,7 @@
 # X Datastructures
 # / Priceretriever
 # X Calculation (Add features, fix TODOs)
-# / Writer
+# X Writer (Add features, fix TODOs)
 # / Visualization
 
 from readers import get_files
@@ -33,5 +33,5 @@ def run():
 # - Get files
 # - Specify readers
 # - / Get prices (scraping or API)
-# - / Write to file (to excel)
+# - X Write to file (to excel)
 # - Visualize on website
