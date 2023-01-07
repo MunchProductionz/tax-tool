@@ -42,6 +42,9 @@ def write_to_excel(transactions, amounts, transaction_profits, transaction_curre
 
 def write_transactions_sheet(sheet, transactions, transactions_profits, format):
     
+    # Get indexes
+    transaction_index = get_transaction_index()
+    
     # Write headers
     sheet.write('B2', "Transactions", format["sheet_header"])
     sheet.write('B4', "Date", format["column_header"])
@@ -147,6 +150,10 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     # Show sum of assets after all transactions
     # Allow for initial asset inputs?
     
+    # Get indexes
+    amount_index = get_amount_index()
+    column_index = get_column_index()
+    
     # Write headers
     sheet.write('B2', "Assets", format["sheet_header"])
     sheet.write('B4', "Currency", format["column_header"])
@@ -176,26 +183,43 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     # Insert chart into sheet
     sheet.insert_chart('D4', pie_chart)
     
+    
+    # Write headers
+    sheet.write('L2', "Transactions", format["sheet_subheader"])
+    sheet.merge_range('L4:L5', "Date", format["merged_header_left"])
+    sheet.write('L6', "SUM Total", format["column_header"])
+    sheet.write('L7', "SUM", format["column_header"])
+    
+    # Set column-width
+    sheet.set_column(11, 11, 12)
+    
+    # Write headers for currencies
+    row = 3         # Starts at row 4 (zero-indexed)
+    column = 12     # Starts at column L (zero-indexed)
+    for currency, amount in amounts.items():
+        
+        # Write headers of currency and "In" and "Out" column
+        sheet.merge_range(row, column, row, column + 1, currency, format["merged_header"])
+        sheet.write(row + 1, column, "In", format["center_align"])
+        sheet.write(row + 1, column + 1, "Out", format["center_align"])
+        
+        # Write formula of "SUM Total" column
+        total_sum_formula = "=" + column_index[column] + str(row + 4) + "-" + column_index[column + 1] + str(row + 4)
+        sheet.merge_range(row + 2, column, row + 2, column + 1, total_sum_formula, format["merged_header"])
+        
+        # Write formula of "In" and "Out" column
+        sum_formula_in = "=SUM(" + column_index[column] + str(row + 5) + ":" + column_index[column] + str(row + 497) + ")"
+        sum_formula_out = "=SUM(" + column_index[column + 1] + str(row + 5) + ":" + column_index[column + 1] + str(row + 497) + ")"
+        sheet.write(row + 3, column, sum_formula_in, format["center_align"])
+        sheet.write(row + 3, column + 1, sum_formula_out, format["center_align"])
+        
+        column += 2
+    
+    
     print('Assets sheet completed.') 
     
     return None
 
-# Define transaction
-transaction_index = {
-    "date": 0,
-    "currency_sold": 1,
-    "amount_sold": 2,
-    "price_sold": 3,
-    "currency_bought": 4,
-    "amount_bought": 5,
-    "price_bought": 6
-}
-
-# Define amounts
-amount_index = {
-    "date": 0,
-    "amount": 1
-}
 
 ### Helper Methods ###
 def initialize_workbook_and_worksheets():
@@ -210,7 +234,10 @@ def get_format(workbook):
     
     format = {
         "sheet_header": workbook.add_format({'bold': 1, 'font_size': 14}),
+        "sheet_subheader": workbook.add_format({'bold': 1, 'font_size': 12}),
         "column_header": workbook.add_format({'bold': 1, 'bottom': 1}),
+        "merged_header": workbook.add_format({'bold': 1, 'border': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_left": workbook.add_format({'bold': 1, 'border': 1, 'align': 'left', 'valign': 'vcenter'}),
         "center_align": workbook.add_format({'align': 'center'}),
         "green": workbook.add_format({'bg_color': '#C6EFCE', 'font_color': '#006100'}),
         "red": workbook.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
@@ -226,6 +253,64 @@ def get_pie_chart(workbook):
     
     return workbook.add_chart({'type': 'pie'})
 
+def get_transaction_index():
+    
+    # Define transaction
+    transaction_index = {
+        "date": 0,
+        "currency_sold": 1,
+        "amount_sold": 2,
+        "price_sold": 3,
+        "currency_bought": 4,
+        "amount_bought": 5,
+        "price_bought": 6
+    }
+    
+    return transaction_index
+
+def get_amount_index():
+    
+    # Define amounts
+    amount_index = {
+        "date": 0,
+        "amount": 1
+    }
+
+    return amount_index
+
+def get_column_index():
+    
+    # Define column index of sheet
+    column_index = {
+        0: "A",
+        1: "B",
+        2: "C",
+        3: "D",
+        4: "E",
+        5: "F",
+        6: "G",
+        7: "H",
+        8: "I",
+        9: "J",
+        10: "K",
+        11: "L",
+        12: "M",
+        13: "N",
+        14: "O",
+        15: "P",
+        16: "Q",
+        17: "R",
+        18: "S",
+        19: "T",
+        20: "U",
+        21: "V",
+        22: "W",
+        23: "X",
+        24: "Y",
+        25: "Z"
+    }
+    
+    return column_index
 
 ### Testing ###
 
@@ -235,8 +320,10 @@ cleaned_transaction_1 = ["01/01/2023", "BTC", 0.5, 25000, "USD", 12500, 1]
 cleaned_transaction_2 = ["02/01/2023", "USD", 5000, 1, "BTC", 0.25, 20000]
 cleaned_transactions = [cleaned_transaction_1, cleaned_transaction_2]
 
-amounts = {"BTC": Stack()}
+amounts = {"BTC": Stack(), "ETH": Stack(), "USD": Stack()}
 amounts["BTC"].enqueue(["01/01/2023", 0.25])
+amounts["ETH"].enqueue(["01/01/2023", 0.3])
+amounts["USD"].enqueue(["01/01/2023", 10])
 transaction_profits = [10000, 0]
 transaction_currency_profits = {"BTC": ["01/01/2023", 10000]}
 currency_profits = {"BTC": 10000, "ETH": -5000}
