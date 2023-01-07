@@ -146,8 +146,7 @@ def write_results_sheet(sheet, currency_profits, format, bar_chart):
 
 def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, pie_chart):
     
-    # Show sum of assets after all transactions
-    # Allow for initial asset inputs?
+    # TODO: Allow for initial asset inputs?
     
     # Get indexes
     amount_index = get_amount_index()
@@ -186,7 +185,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     
     # Write headers
     sheet.write('L2', "Transactions", format["sheet_subheader"])
-    sheet.merge_range('L4:L5', "Date", format["merged_header_left"])
+    sheet.merge_range('L4:L5', "Date", format["merged_header_left_align_bottom_border"])
     sheet.write('L6', "SUM Total", format["column_header"])
     sheet.write('L7', "SUM", format["column_header"])
     
@@ -204,19 +203,19 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         out_column = column + 1
         
         # Write headers of currency and "In" and "Out" column
-        sheet.merge_range(row, in_column, row, out_column, currency, format["merged_header"])
-        sheet.write(row + 1, in_column, "In", format["center_align"])
-        sheet.write(row + 1, out_column, "Out", format["center_align"])
+        sheet.merge_range(row, in_column, row, out_column, currency, format["merged_header_side_borders"])
+        sheet.write(row + 1, in_column, "In", format["center_align_left_and_bottom_borders"])
+        sheet.write(row + 1, out_column, "Out", format["center_align_right_and_bottom_borders"])
         
         # Write formula of "SUM Total" column
         total_sum_formula = "=" + column_index[in_column] + str(row + 4) + "-" + column_index[out_column] + str(row + 4)
-        sheet.merge_range(row + 2, in_column, row + 2, out_column, total_sum_formula, format["merged_header"])
+        sheet.merge_range(row + 2, in_column, row + 2, out_column, total_sum_formula, format["merged_header_full_border"])
         
         # Write formula of "In" and "Out" column
         sum_formula_in = "=SUM(" + column_index[in_column] + str(row + 5) + ":" + column_index[in_column] + str(row + 497) + ")"
         sum_formula_out = "=SUM(" + column_index[out_column] + str(row + 5) + ":" + column_index[out_column] + str(row + 497) + ")"
-        sheet.write(row + 3, in_column, sum_formula_in, format["center_align"])
-        sheet.write(row + 3, out_column, sum_formula_out, format["center_align"])
+        sheet.write(row + 3, in_column, sum_formula_in, format["center_align_left_and_bottom_borders"])
+        sheet.write(row + 3, out_column, sum_formula_out, format["center_align_right_and_bottom_borders"])
         
         # Update currency_column
         currency_in_column[currency] = in_column
@@ -238,7 +237,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         cell_currency_sold = column_index[out_column] + str(row)
         
         # Write date, amount bought and amount sold of transaction
-        sheet.write(cell_date, transaction[transaction_index["date"]], format["center_align"])
+        sheet.write(cell_date, transaction[transaction_index["date"]], format["right_border"])
         sheet.write(cell_currency_bought, transaction[transaction_index["amount_bought"]], format["center_align"])
         sheet.write(cell_currency_sold, transaction[transaction_index["amount_sold"]], format["center_align"])
         
@@ -265,9 +264,28 @@ def get_format(workbook):
         "sheet_header": workbook.add_format({'bold': 1, 'font_size': 14}),
         "sheet_subheader": workbook.add_format({'bold': 1, 'font_size': 12}),
         "column_header": workbook.add_format({'bold': 1, 'bottom': 1}),
-        "merged_header": workbook.add_format({'bold': 1, 'border': 1, 'align': 'center', 'valign': 'vcenter'}),
-        "merged_header_left": workbook.add_format({'bold': 1, 'border': 1, 'align': 'left', 'valign': 'vcenter'}),
+        "merged_header_no_borders": workbook.add_format({'bold': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_right_border": workbook.add_format({'bold': 1, 'right': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_left_border": workbook.add_format({'bold': 1, 'left': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_side_borders": workbook.add_format({'bold': 1, 'left': 1, 'right': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_bottom_border": workbook.add_format({'bold': 1, 'bottom': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_top_border": workbook.add_format({'bold': 1, 'top': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_left_right_and_bottom_borders": workbook.add_format({'bold': 1, 'left': 1, 'right': 1, 'bottom': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_left_right_and_top_borders": workbook.add_format({'bold': 1, 'left': 1, 'right': 1, 'top': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_full_border": workbook.add_format({'bold': 1, 'border': 1, 'align': 'center', 'valign': 'vcenter'}),
+        "merged_header_left_align": workbook.add_format({'bold': 1, 'align': 'left', 'valign': 'vcenter'}),
+        "merged_header_left_align_bottom_border": workbook.add_format({'bold': 1, 'bottom': 1, 'align': 'left', 'valign': 'vcenter'}),
         "center_align": workbook.add_format({'align': 'center'}),
+        "center_align_left_border": workbook.add_format({'align': 'center', 'left': 1}),
+        "center_align_right_border": workbook.add_format({'align': 'center', 'right': 1}),
+        "center_align_side_borders": workbook.add_format({'align': 'center', 'left': 1, 'right': 1}),
+        "center_align_bottom_border": workbook.add_format({'align': 'center', 'bottom': 1}),
+        "center_align_top_border": workbook.add_format({'align': 'center', 'top': 1}),
+        "center_align_left_and_bottom_borders": workbook.add_format({'align': 'center', 'left': 1, 'bottom': 1}),
+        "center_align_right_and_bottom_borders": workbook.add_format({'align': 'center', 'right': 1, 'bottom': 1}),
+        "center_align_left_and_top_borders": workbook.add_format({'align': 'center', 'left': 1, 'top': 1}),
+        "center_align_right_and_top_borders": workbook.add_format({'align': 'center', 'right': 1, 'top': 1}),
+        "right_border": workbook.add_format({'right': 1}),
         "green": workbook.add_format({'bg_color': '#C6EFCE', 'font_color': '#006100'}),
         "red": workbook.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
     }
