@@ -13,11 +13,14 @@ def write_to_excel(transactions, transaction_profits, transaction_currency_profi
     
     # Formatting
     format = get_format(workbook)
+    
+    # Create chart object
+    bar_chart = get_bar_chart(workbook)
 
     # Fix worksheets
-    write_transactions_sheet(transactions, transaction_profits, transactions_sheet, format)
-    write_results_sheet(transactions, transaction_currency_profits, results_sheet, format)
-    write_assets_sheet(transactions, currency_profits, assets_sheet, format)
+    write_transactions_sheet(transactions_sheet, transactions, transaction_profits, format)
+    write_results_sheet(results_sheet, currency_profits, format, bar_chart)
+    write_assets_sheet(assets_sheet, transactions, currency_profits, format)
 
     # Profit per transaction
     # - Write each transaction to a new line in excel
@@ -34,7 +37,7 @@ def write_to_excel(transactions, transaction_profits, transaction_currency_profi
 
     return None
 
-def write_transactions_sheet(transactions, transactions_profits, sheet, format):
+def write_transactions_sheet(sheet, transactions, transactions_profits, format):
     
     # Write headers
     sheet.write('B2', "Transactions", format["sheet_header"])
@@ -88,11 +91,58 @@ def write_transactions_sheet(transactions, transactions_profits, sheet, format):
     
     return None
 
-def write_results_sheet(transactions, transaction_currency_profits, sheet, format):
+def write_results_sheet(sheet, currency_profits, format, bar_chart):
+    
+    # Write headers
+    sheet.write('B2', "Results", format["sheet_header"])
+    sheet.write('B4', "Currency", format["column_header"])
+    sheet.write('C4', "Profit", format["column_header"])
+    
+    # Set column-width
+    sheet.set_column(1, 1, 12)
+    sheet.set_column(2, 2, 15, format["center_align"])
+    
+    # Set conditional format when profit > 0
+    sheet.conditional_format('C5:C200', {
+                                            'type': 'cell',
+                                            'criteria': '>',
+                                            'value': 0,
+                                            'format': format["green"]})
+    
+    # Set conditional format when profit < 0
+    sheet.conditional_format('C5:C200', {
+                                            'type': 'cell',
+                                            'criteria': '<',
+                                            'value': 0,
+                                            'format': format["red"]})
+    
+    # Write profit of currencies
+    row = 5         # Starts at row 6 (5+1)
+    for currency, profit in currency_profits.items():
+        sheet.write('B' + str(row), currency)
+        sheet.write('C' + str(row), profit)
+        row += 1
+    
+    # Add series to the bar chart
+    bar_chart.add_series({
+        'name': '=Results!$B$2',
+        'categories': '=Results!$B$5:$B$' + str(row),
+        'values': '=Results!$C$5:$C$' + str(row),
+        'data_labels': {'value': True, 'num_format': '#,##0.00'}
+    })
+    
+    # Insert chart into sheet
+    sheet.insert_chart('D4', bar_chart)
+    
+    print('Results sheet completed.')   
     
     return None
 
-def write_assets_sheet(transactions, currency_profits, sheet, format):
+def write_assets_sheet(sheet, transactions, currency_profits, format):
+    
+    # Update assets per transaction
+    # Show sum of assets after all transactions
+    # Allow for initial asset inputs?
     
     return None
 
@@ -129,6 +179,11 @@ def get_format(workbook):
 
     return format
 
+def get_bar_chart(workbook):
+    
+    return workbook.add_chart({'type': 'bar'})
+
+
 ### Testing ###
 
 # Cleaned transactions: [transaction1, transaction2, ...]
@@ -139,7 +194,7 @@ cleaned_transactions = [cleaned_transaction_1, cleaned_transaction_2]
 
 transaction_profits = [10000, 0]
 transaction_currency_profits = {"BTC": ["01/01/2023", 10000]}
-currency_profits = {"BTC": 10000}
+currency_profits = {"BTC": 10000, "ETH": -5000}
 
 write_to_excel(cleaned_transactions, transaction_profits, transaction_currency_profits, currency_profits)
 
