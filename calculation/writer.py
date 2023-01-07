@@ -146,7 +146,6 @@ def write_results_sheet(sheet, currency_profits, format, bar_chart):
 
 def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, pie_chart):
     
-    # Update assets per transaction
     # Show sum of assets after all transactions
     # Allow for initial asset inputs?
     
@@ -196,24 +195,35 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     # Write headers for currencies
     row = 3         # Starts at row 4 (zero-indexed)
     column = 12     # Starts at column L (zero-indexed)
+    currency_in_column = {}
     for currency, amount in amounts.items():
         
+        # Define in and out columns
+        in_column = column
+        out_column = column + 1
+        
         # Write headers of currency and "In" and "Out" column
-        sheet.merge_range(row, column, row, column + 1, currency, format["merged_header"])
-        sheet.write(row + 1, column, "In", format["center_align"])
-        sheet.write(row + 1, column + 1, "Out", format["center_align"])
+        sheet.merge_range(row, in_column, row, out_column, currency, format["merged_header"])
+        sheet.write(row + 1, in_column, "In", format["center_align"])
+        sheet.write(row + 1, out_column, "Out", format["center_align"])
         
         # Write formula of "SUM Total" column
-        total_sum_formula = "=" + column_index[column] + str(row + 4) + "-" + column_index[column + 1] + str(row + 4)
-        sheet.merge_range(row + 2, column, row + 2, column + 1, total_sum_formula, format["merged_header"])
+        total_sum_formula = "=" + column_index[in_column] + str(row + 4) + "-" + column_index[out_column] + str(row + 4)
+        sheet.merge_range(row + 2, in_column, row + 2, out_column, total_sum_formula, format["merged_header"])
         
         # Write formula of "In" and "Out" column
-        sum_formula_in = "=SUM(" + column_index[column] + str(row + 5) + ":" + column_index[column] + str(row + 497) + ")"
-        sum_formula_out = "=SUM(" + column_index[column + 1] + str(row + 5) + ":" + column_index[column + 1] + str(row + 497) + ")"
-        sheet.write(row + 3, column, sum_formula_in, format["center_align"])
-        sheet.write(row + 3, column + 1, sum_formula_out, format["center_align"])
+        sum_formula_in = "=SUM(" + column_index[in_column] + str(row + 5) + ":" + column_index[in_column] + str(row + 497) + ")"
+        sum_formula_out = "=SUM(" + column_index[out_column] + str(row + 5) + ":" + column_index[out_column] + str(row + 497) + ")"
+        sheet.write(row + 3, in_column, sum_formula_in, format["center_align"])
+        sheet.write(row + 3, out_column, sum_formula_out, format["center_align"])
+        
+        # Update currency_column
+        currency_in_column[currency] = in_column
         
         column += 2
+    
+    # Update assets per transaction
+    
     
     
     print('Assets sheet completed.') 
