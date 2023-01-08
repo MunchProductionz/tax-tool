@@ -64,7 +64,7 @@ class BinanceReader:
         uncleaned_data = pd.read_excel(r'' + file_path + '')
         print(uncleaned_data.head())
     
-        cleaned_data = uncleaned_data[["Date(UTC)"]]
+        # cleaned_data = uncleaned_data[["Date(UTC)"]]
 
         # Read filedata
         # Put data into transactions-format
@@ -81,7 +81,7 @@ class CoinbaseReader:
         uncleaned_data = pd.read_csv(r'' + file_path + '')
         print(uncleaned_data.head())
     
-        cleaned_data = uncleaned_data[["Date(UTC)"]]
+        # cleaned_data = uncleaned_data[["Date(UTC)"]]
 
         # Read filedata
         # Put data into transactions-format
@@ -122,7 +122,13 @@ def get_readers():
 
 ### Testing ###
 
-get_files()
+files = get_files()
+readers = get_readers()
+exchange = files[0][0]
+file_path = files[0][1]
+print(files)
+print(file_path)
+read_file(readers[exchange], file_path)
 
 
 # reader = BinanceReader()
