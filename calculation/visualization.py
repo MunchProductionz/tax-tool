@@ -4,8 +4,8 @@
 def visualize():
     
     #Visualizations:
-    # - Amounts per currency (Bar chart? Measured in fiat?)
     # - Total profit per currency (Bar chart?)
+    # - Amounts per currency (Bar chart? Measured in fiat?)
     # - Price graph of currency (Line chart?)
     # -- Daily chart of a year? (Adjustable?)
     # -- Dots on transaction (green = buy, red = sell)
