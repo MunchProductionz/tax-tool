@@ -41,6 +41,7 @@ def calculate_profit(transactions, order, fiat):
     # Find unique currencies
     unique_currencies = set()
     for transaction in transactions:
+        if transaction == None: continue # Made to prevent NoneType is not subscriptable error
         if transaction[index_currency_sold] not in unique_currencies: unique_currencies.add(transaction[index_currency_sold])
         if transaction[index_currency_bought] not in unique_currencies: unique_currencies.add(transaction[index_currency_bought])
 
@@ -74,6 +75,7 @@ def calculate_profit(transactions, order, fiat):
     # Make calculation per transaction
     counter = 0
     for transaction in transactions:
+        if transaction == None: continue # Made to prevent NoneType is not subscriptable error
         
         date = transaction[index_date]
         currency_sold = transaction[index_currency_sold]

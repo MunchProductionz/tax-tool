@@ -10,6 +10,8 @@ def get_transactions_from_file(exchange, file_path):
     # Get reader
     reader = get_reader(exchange)
 
+    print(file_path)
+
     # Read file
     transactions = read_file(reader, file_path)
 
@@ -29,6 +31,6 @@ def get_transactions_from_files(files):
         exchange = file[index_exchange]
         file_path = file[index_file_path]
         file_transactions = get_transactions_from_file(exchange, file_path)
-        transactions += file_transactions                      # TODO: Check that transactions are merged
+        transactions.append(file_transactions)                      # TODO: Check that transactions are merged
 
     return transactions

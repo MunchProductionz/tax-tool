@@ -57,7 +57,7 @@ def read_file(reader, file_path):
 # BinanceReader
 class BinanceReader:
 
-    def read_file(file_path):
+    def read_file(self, file_path):
         
         # Excel
         # uncleaned_data = pd.read_excel(filedata)      # TODO: Implement if possible to input file
@@ -66,16 +66,17 @@ class BinanceReader:
     
         # cleaned_data = uncleaned_data[["Date(UTC)"]]
 
+
         # Read filedata
         # Put data into transactions-format
         # Return transactions
         
-        return None
+        return None 
 
 # CoinbaseReader
 class CoinbaseReader:
 
-    def read_file(file_path):
+    def read_file(self, file_path):
         
         # CSV
         uncleaned_data = pd.read_csv(r'' + file_path + '')
@@ -98,7 +99,7 @@ def isValidExchange(exchange):
     
     readers = get_readers()
     
-    for reader_exchange, reader in readers:
+    for reader_exchange in readers:
         if exchange == reader_exchange: return True
     return False
 
