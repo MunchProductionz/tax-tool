@@ -13,9 +13,25 @@ from readers import get_files
 from datacleaner import get_transactions_from_files
 from calculation import calculate_profit
 
-from fastapi import FastAPI
+import shutil
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
@@ -49,3 +65,10 @@ async def get_profits():
         "currency_transaction_profits": currency_transaction_profits,
         "currency_profits": currency_profits
     }
+
+@app.post("/files")
+async def create_upload_file(uploaded_file: UploadFile = File(...)):    
+    file_location = f"../files/{uploaded_file.filename}"
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(uploaded_file.file, file_object)    
+    return {"info": f"file '{uploaded_file.filename}' saved at '{file_location}'"}
