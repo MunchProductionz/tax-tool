@@ -1,5 +1,5 @@
 import pandas as pd
-import os
+import glob
 
 #Functions:
 # - *Define readers ({exchange: <reader>})
@@ -14,9 +14,20 @@ import os
 # Get uploaded files
 def get_files():
 
-    # Return list of uploaded files
+    # TODO: Create method for storing files
+    # TODO: Separate between different exchanges
+    # TODO: Handle case when file is not valid type
 
-    return None
+    # Create list of uploaded files
+    files = list()
+
+    # Add uploaded files to files
+    for file in glob.glob("../files/*"):
+        files.append(file)
+
+    print(files)
+
+    return files
 
 # Initialize readers
 def initialize_readers():
@@ -83,13 +94,18 @@ readers = {
 }
 
 
-reader = BinanceReader()
-reader.read_file()
-
-
 ### Helper methods ###
 
 def isValidExchange(exchange):
     for reader_exchange, reader in readers:
         if exchange == reader_exchange: return True
     return False
+
+
+### Testing ###
+
+get_files()
+
+
+# reader = BinanceReader()
+# reader.read_file()
