@@ -18,12 +18,18 @@ def get_files():
     # TODO: Separate between different exchanges
     # TODO: Handle case when file is not valid type
 
-    # Create list of uploaded files
+    # Create lists of uploaded files
     files = list()
+    
+    # Get valid exchanges
+    exchanges = get_exchanges()
 
-    # Add uploaded files to files
-    for file in glob.glob("../files/*"):
-        files.append(file)
+    # Add uploaded files' file_path and their exchanges to files
+    for exchange in exchanges:
+        for file_path in glob.glob("../files/*" + exchange + "*"):
+            files.append([exchange, file_path])
+
+    print(files)
 
     return files
 
@@ -42,10 +48,10 @@ def get_reader(exchange):
 
     return readers[exchange]
 
-def read_file(reader, filedata):
+def read_file(reader, file_path):
 
     # Use reader to read filedata
-    transactions = reader.read_file(filedata)
+    transactions = reader.read_file(file_path)
 
     return transactions
 
@@ -55,11 +61,11 @@ def read_file(reader, filedata):
 # BinanceReader
 class BinanceReader:
 
-    def read_file(filedata):
+    def read_file(file_path):
         
         # Excel
         # uncleaned_data = pd.read_excel(filedata)      # TODO: Implement if possible to input file
-        uncleaned_data = pd.read_excel(r'..\files\Binance_Order_History_Spot.xlsx')
+        uncleaned_data = pd.read_excel(r'' + file_path + '')
         print(uncleaned_data.head())
     
         cleaned_data = uncleaned_data[["Date(UTC)"]]
@@ -73,7 +79,7 @@ class BinanceReader:
 # CoinbaseReader
 class CoinbaseReader:
 
-    def read_file(filedata):
+    def read_file(file_path):
         
         # CSV
 
@@ -99,6 +105,14 @@ def isValidExchange(exchange):
         if exchange == reader_exchange: return True
     return False
 
+def get_exchanges():
+    
+    exchanges = [
+        "Binance",
+        "Coinbase"
+    ]
+    
+    return exchanges
 
 ### Testing ###
 

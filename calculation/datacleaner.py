@@ -5,13 +5,13 @@
 from readers import get_reader
 from readers import read_file
 
-def get_transactions_from_file(exchange, filedata):
+def get_transactions_from_file(exchange, file_path):
 
     # Get reader
     reader = get_reader(exchange)
 
     # Read file
-    transactions = read_file(reader, filedata)
+    transactions = read_file(reader, file_path)
 
     return transactions
 
@@ -19,7 +19,7 @@ def get_transactions_from_files(files):
 
     # Define files
     index_exchange = 0
-    index_file_data = 1
+    index_file_path = 1
 
     # Initialize transactions
     transactions = []
@@ -27,8 +27,8 @@ def get_transactions_from_files(files):
     # Get and add file transactions to transactions 
     for file in files:
         exchange = file[index_exchange]
-        file_data = file[index_file_data]
-        file_transactions = get_transactions_from_file(exchange, file_data)
+        file_path = file[index_file_path]
+        file_transactions = get_transactions_from_file(exchange, file_path)
         transactions += file_transactions                      # TODO: Check that transactions are merged
 
     return transactions
