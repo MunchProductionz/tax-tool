@@ -1,6 +1,6 @@
-from datastructures import Queue
-from datastructures import Stack
-from priceretriever import get_price
+from rest.calculations.datastructures import Queue
+from rest.calculations.datastructures import Stack
+from rest.calculations.priceretriever import get_price
 
 #Steg:
 # - X Finn unike currencies

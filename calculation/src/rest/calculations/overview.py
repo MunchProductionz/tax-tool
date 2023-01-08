@@ -9,11 +9,11 @@
 # X Writer (Add features, fix TODOs)
 # / Visualization
 
-from readers import get_files
-from datacleaner import get_transactions_from_files
-from calculation import calculate_profit
-from writer import write_to_excel
-from visualization import visualize
+from rest.calculations.readers import get_files
+from rest.calculations.datacleaner import get_transactions_from_files
+from rest.calculations.calculation import calculate_profit
+from rest.calculations.writer import write_to_excel
+from rest.calculations.visualization import visualize
 
 
 def run():

@@ -2,8 +2,7 @@
 # - get_transactions_from_file
 # - get_transactions_from_files
 
-from readers import get_reader
-from readers import read_file
+from rest.calculations.readers import get_reader, read_file
 
 def get_transactions_from_file(exchange, file_path):
 
