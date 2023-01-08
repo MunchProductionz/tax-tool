@@ -1,5 +1,6 @@
 #Filer:
 # / Overview
+# / Fileretriever (Add upload feature, fix TODOs)
 # / Readers
 # X Datacleaner
 # X Datastructures
@@ -30,7 +31,7 @@ def run():
 
 
 # Things to do:
-# - Get files
+# - / Get files
 # - Specify readers
 # - / Get prices (scraping or API)
 # - X Write to file (to excel)
