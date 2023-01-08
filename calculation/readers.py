@@ -25,8 +25,6 @@ def get_files():
     for file in glob.glob("../files/*"):
         files.append(file)
 
-    print(files)
-
     return files
 
 # Initialize readers
