@@ -33,15 +33,11 @@ def get_files():
 
     return files
 
-# Initialize readers
-def initialize_readers():
-    
-    # Initialize readers-dictionary
-
-    return None
-
 # Get reader
 def get_reader(exchange):
+
+    # Get readers
+    readers = get_readers()
 
     # Validations
     if not isValidExchange(exchange): return None                       # TODO: Fix error handling
@@ -82,6 +78,10 @@ class CoinbaseReader:
     def read_file(file_path):
         
         # CSV
+        uncleaned_data = pd.read_csv(r'' + file_path + '')
+        print(uncleaned_data.head())
+    
+        cleaned_data = uncleaned_data[["Date(UTC)"]]
 
         # Read filedata
         # Put data into transactions-format
@@ -92,15 +92,12 @@ class CoinbaseReader:
 # ...
 
 
-readers = {
-    "Binance": BinanceReader(),
-    "Coinbase": CoinbaseReader()
-}
-
-
 ### Helper methods ###
 
 def isValidExchange(exchange):
+    
+    readers = get_readers()
+    
     for reader_exchange, reader in readers:
         if exchange == reader_exchange: return True
     return False
@@ -113,6 +110,15 @@ def get_exchanges():
     ]
     
     return exchanges
+
+def get_readers():
+    
+    readers = {
+        "Binance": BinanceReader(),
+        "Coinbase": CoinbaseReader()
+    }
+    
+    return readers
 
 ### Testing ###
 
