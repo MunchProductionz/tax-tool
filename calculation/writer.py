@@ -402,7 +402,7 @@ cleaned_transactions = [
 ]
 
 # Amounts
-amounts = {"BTC": Stack(), "ETH": Stack(), "USD": Stack()}
+amounts = {"BTC": Stack(), "ETH": Stack(), "LTC": Stack(), "USD": Stack()}
 amounts["BTC"].enqueue(["2022-11-15", 0.75])
 amounts["BTC"].enqueue(["2022-11-18", 0.5])
 amounts["ETH"].enqueue(["2022-11-22", 2.5])
