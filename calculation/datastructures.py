@@ -1,5 +1,7 @@
 from collections import deque
 
+# TODO: Add method for identifying when datastructure is empty.
+
 # Queue (FIFO)
 class Queue:
     def __init__(self):
