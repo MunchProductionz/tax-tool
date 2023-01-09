@@ -64,8 +64,12 @@ class BinanceReader:
         uncleaned_data = pd.read_excel(r'' + file_path + '')
         print(uncleaned_data.head())
     
-        # cleaned_data = uncleaned_data[["Date(UTC)"]]
-
+        cleaned_data = uncleaned_data[["Date", "Market", "Type", "Price", "Amount", "Total"]]
+        
+        print(cleaned_data.head())
+        
+        date = cleaned_data["Date"].loc[0].item()
+        market = cleaned_data["Market"].loc[0].item()
 
         # Read filedata
         # Put data into transactions-format
@@ -121,6 +125,19 @@ def get_readers():
     
     return readers
 
+def get_currencies():
+    
+    currencies = [
+        "BTC",
+        "ETH",
+        "LTC",
+        "XRP",
+        "POWR",
+        "USD"
+    ]
+
+    return currencies
+    
 
 ### Testing ###
 
