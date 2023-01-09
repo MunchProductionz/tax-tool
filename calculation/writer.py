@@ -386,17 +386,33 @@ def get_unique_currencies(transactions):
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
-cleaned_transaction_1 = ["01/01/2023", "BTC", 0.5, 25000, "USD", 12500, 1]
-cleaned_transaction_2 = ["02/01/2023", "USD", 5000, 1, "BTC", 0.25, 20000]
-cleaned_transactions = [cleaned_transaction_1, cleaned_transaction_2]
+cleaned_transaction_1 = ["2022-11-12", "USD", 1000, 1, "BTC", 1, 1000]
+cleaned_transaction_2 = ["2022-11-15", "BTC", 0.25, 1200, "USD", 300, 1]
+cleaned_transaction_3 = ["2022-11-18", "USD", 750, 1, "BTC", 0.5, 1500]
+cleaned_transaction_4 = ["2022-11-22", "USD", 500, 1, "ETH", 5, 100]
+cleaned_transaction_5 = ["2022-11-27", "USD", 200, 1, "LTC", 4, 50]
+cleaned_transaction_6 = ["2022-12-05", "ETH", 2.5, 80, "USD", 200, 1]
+cleaned_transactions = [
+    cleaned_transaction_1,
+    cleaned_transaction_2,
+    cleaned_transaction_3,
+    cleaned_transaction_4,
+    cleaned_transaction_5,
+    cleaned_transaction_6
+]
 
+# Amounts
 amounts = {"BTC": Stack(), "ETH": Stack(), "USD": Stack()}
-amounts["BTC"].enqueue(["01/01/2023", 0.25])
-amounts["ETH"].enqueue(["01/01/2023", 0.3])
-amounts["USD"].enqueue(["01/01/2023", 10])
-transaction_profits = [10000, 0]
-transaction_currency_profits = {"BTC": ["01/01/2023", 10000]}
-currency_profits = {"BTC": 10000, "ETH": -5000}
+amounts["BTC"].enqueue(["2022-11-15", 0.75])
+amounts["BTC"].enqueue(["2022-11-18", 0.5])
+amounts["ETH"].enqueue(["2022-11-22", 2.5])
+amounts["LTC"].enqueue(["2022-11-27", 4])
+amounts["USD"].enqueue(["2022-12-05", 0])           # TODO: Handle fiat amounts (can't be negative (-1950))
+
+# Profits
+transaction_profits = [0, 50, 0, 0, 0, -30]
+transaction_currency_profits = {"BTC": ["2022-11-15", 50], "ETH": ["2022-12-05", -30]}
+currency_profits = {"BTC": 50, "ETH": -30}          # LTC profit never realized. Not stored in currency_profits
 
 write_to_excel(cleaned_transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits)
 
