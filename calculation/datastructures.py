@@ -17,8 +17,8 @@ class Queue:
         self.elements.appendleft(element)
         
     def isEmpty(self):
-        if len(self.elements) == 0: return False
-        return True
+        if len(self.elements) == 0: return True
+        return False
 
 # Stack (LIFO)
 class Stack:
@@ -35,5 +35,5 @@ class Stack:
         self.elements.append(element)
         
     def isEmpty(self):
-        if len(self.elements) == 0: return False
-        return True
+        if len(self.elements) == 0: return True
+        return False

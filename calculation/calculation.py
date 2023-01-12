@@ -75,7 +75,7 @@ def calculate_profit(transactions, order, fiat):
 
         # Initialize transaction profit of currency sold ([date, transaction_profit])
         transaction_profits.append(0)
-        currency_transaction_profits[currency_sold].append[date, 0]
+        # currency_transaction_profits[currency_sold].append[date, 0]
         index_transaction = len(currency_transaction_profits[currency_sold]) - 1
 
         # Get price of currency sold
@@ -85,11 +85,14 @@ def calculate_profit(transactions, order, fiat):
         temporary_amount_sold = amount_sold
         while temporary_amount_sold > 0:
             
-            # Copy stored element amount
-            temporary_date_currency_sold, temporary_amount_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
-            
-            # Get price of stored element
-            fiat_price_of_temporary_date_currency_sold = get_price(temporary_date_currency_sold, currency_sold, fiat)
+            # Copy stored element amount and get price of stored element
+            if not amounts[currency_sold].isEmpty(): 
+                temporary_date_currency_sold, temporary_amount_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
+                fiat_price_of_temporary_date_currency_sold = get_price(temporary_date_currency_sold, currency_sold, fiat)
+            else:
+                temporary_date_currency_sold = None
+                temporary_amount_currency_sold = 0
+                fiat_price_of_temporary_date_currency_sold = 0
             
             # If stored element amount > sold amount (Base case)
             if temporary_amount_currency_sold >= temporary_amount_sold:
