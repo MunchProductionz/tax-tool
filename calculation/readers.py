@@ -114,6 +114,8 @@ class CoinbaseReader:
         # CSV
         uncleaned_data = pd.read_csv(r'' + file_path + '', delimiter=',', quotechar='"', skiprows=7)
         
+        print(uncleaned_data.head())
+        
         # cleaned_data = uncleaned_data[["Date(UTC)"]]
         cleaned_data = uncleaned_data[["Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "USD Spot Price at Transaction", "USD Subtotal"]]
         
