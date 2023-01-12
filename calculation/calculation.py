@@ -105,6 +105,10 @@ def calculate_profit(transactions, order, fiat):
             # If stored element amount > sold amount (Base case)
             if temporary_amount_currency_sold >= temporary_amount_sold:
                 temporary_amount_currency_sold -= temporary_amount_sold
+                print('Temporary amount sold: ' + str(temporary_amount_sold))
+                print('Price sold: ' + str(price_sold))
+                print('Fiat price temporary date: ' + str(fiat_price_of_temporary_date_currency_sold))
+                print('Fiat price current: ' + str(fiat_price_of_currency_sold))
                 cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
                 income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
                 element_profit = income_sold - cost_bought
