@@ -171,3 +171,28 @@ def get_amounts_index():
     }
     
     return amounts_index
+
+
+### Testing ###
+
+# Transactions: [transaction1, transaction2, ...]
+# Transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
+transaction_1 = ["2022-11-12", "USD", 1000, 1, "BTC", 1, 1000]
+transaction_2 = ["2022-11-15", "BTC", 0.25, 1200, "USD", 300, 1]
+transaction_3 = ["2022-11-18", "USD", 750, 1, "BTC", 0.5, 1500]
+transaction_4 = ["2022-11-22", "USD", 500, 1, "ETH", 5, 100]
+transaction_5 = ["2022-11-27", "USD", 200, 1, "LTC", 4, 50]
+transaction_6 = ["2022-12-05", "ETH", 2.5, 80, "USD", 200, 1]
+transactions = [
+    transaction_1,
+    transaction_2,
+    transaction_3,
+    transaction_4,
+    transaction_5,
+    transaction_6
+]
+
+order = 'FIFO'
+fiat = 'NOK'
+
+calculate_profit(transactions, order, fiat)

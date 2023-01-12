@@ -15,6 +15,10 @@ class Queue:
 
     def re_enqueue(self, element):
         self.elements.appendleft(element)
+        
+    def isEmpty(self):
+        if len(self.elements) == 0: return False
+        return True
 
 # Stack (LIFO)
 class Stack:
@@ -29,3 +33,7 @@ class Stack:
 
     def re_enqueue(self, element):
         self.elements.append(element)
+        
+    def isEmpty(self):
+        if len(self.elements) == 0: return False
+        return True
