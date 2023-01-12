@@ -62,8 +62,14 @@ def calculate_profit(transactions, order, fiat):
 
     # Make calculation per transaction
     counter = 0
+    counter_transactions_dropped = 0
+    counter_transactions_completed = 0
     for transaction in transactions:
-        if transaction == None: continue # Made to prevent NoneType is not subscriptable error
+        if transaction == None: 
+            counter += 1
+            counter_transactions_dropped += 1
+            print('Transaction ' + str(counter) + ' was dropped (Transaction == None).')
+            continue # Made to prevent NoneType is not subscriptable error
         
         date = transaction[transaction_index["date"]]
         currency_sold = transaction[transaction_index["currency_sold"]]
@@ -100,7 +106,6 @@ def calculate_profit(transactions, order, fiat):
                 transaction_profits[counter] += element_profit
                 currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += element_profit
                 currency_profits[currency_sold] += element_profit
-                print('End profit: ' + str(element_profit))
                 break
             else:
                 temporary_date_currency_sold, temporary_amount_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
@@ -109,10 +114,6 @@ def calculate_profit(transactions, order, fiat):
             # If stored element amount > sold amount (Base case)
             if temporary_amount_currency_sold >= temporary_amount_sold:
                 temporary_amount_currency_sold -= temporary_amount_sold
-                print('Temporary amount sold: ' + str(temporary_amount_sold))
-                print('Price sold: ' + str(price_sold))
-                print('Fiat price temporary date: ' + str(fiat_price_of_temporary_date_currency_sold))
-                print('Fiat price current: ' + str(fiat_price_of_currency_sold))
                 cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
                 income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
                 element_profit = income_sold - cost_bought
@@ -121,7 +122,6 @@ def calculate_profit(transactions, order, fiat):
                 currency_profits[currency_sold] += element_profit
                 amounts[currency_sold].re_enqueue([temporary_date_currency_sold, temporary_amount_currency_sold])
                 temporary_amount_sold = 0
-                print('Element > Sold profit: ' + str(element_profit))
                 break
 
             # If stored element amount < sold amount
@@ -133,23 +133,19 @@ def calculate_profit(transactions, order, fiat):
             currency_profits[currency_sold] += element_profit
             temporary_amount_sold -= temporary_amount_currency_sold
 
-            print('Element < Sold profit: ' + str(element_profit))
-
         # Update amount of currency bought
         amounts[currency_bought].enqueue([date, amount_bought])
         
         # Update counter
         counter += 1
+        counter_transactions_completed += 1
         
         print('Transaction ' + str(counter) + ' completed.')
-
-    print(amounts)
-    print()
-    print(transaction_profits)
-    print()
-    print(currency_transaction_profits)
-    print()
-    print(currency_profits)
+    
+    
+    print('# of transactions completed: ' + str(counter_transactions_completed))
+    print('# of transactions dropped: ' + str(counter_transactions_dropped))
+    print('# of transaction in total: ' + str(counter))
 
     return amounts, transaction_profits, currency_transaction_profits, currency_profits
 
