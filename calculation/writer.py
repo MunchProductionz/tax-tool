@@ -410,7 +410,7 @@ amounts["LTC"].enqueue(["2022-11-27", 4])
 amounts["USD"].enqueue(["2022-12-05", 0])           # TODO: Handle fiat amounts (can't be negative (-1950))
 
 # Profits
-transaction_profits = [0, 50, 0, 0, 0, -30]
+transaction_profits = [0, 50, 0, 0, 0, -50]
 transaction_currency_profits = {"BTC": ["2022-11-15", 50], "ETH": ["2022-12-05", -30]}
 currency_profits = {"BTC": 50, "ETH": -30}          # LTC profit never realized. Not stored in currency_profits
 
