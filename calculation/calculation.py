@@ -29,35 +29,23 @@ def calculate_profit(transactions, order, fiat):
     if not isValidOrder(order): raise ValueError("Invalid order.")          # TODO: Test error handling
     if not isValidFiat(fiat): raise ValueError("Invalid fiat.")             # TODO: Test error handling
 
-    # Define transaction
-    index_date = 0
-    index_currency_sold = 1
-    index_amount_sold = 2
-    index_price_sold = 3
-    index_currency_bought = 4
-    index_amount_bought = 5
-    index_price_bought = 6
+    # Define indexes
+    transaction_index = get_transaction_index()
+    transaction_profits_index = get_transaction_profits_index()
+    amounts_index = get_amounts_index()
 
     # Find unique currencies
     unique_currencies = set()
     for transaction in transactions:
         if transaction == None: continue # Made to prevent NoneType is not subscriptable error
-        if transaction[index_currency_sold] not in unique_currencies: unique_currencies.add(transaction[index_currency_sold])
-        if transaction[index_currency_bought] not in unique_currencies: unique_currencies.add(transaction[index_currency_bought])
+        if transaction[transaction_index["currency_sold"]] not in unique_currencies: unique_currencies.add(transaction[transaction_index["currency_sold"]])
+        if transaction[transaction_index["currency_bought"]] not in unique_currencies: unique_currencies.add(transaction[transaction_index["currency_bought"]])
 
     # Initialize dictionaries
     amounts = dict()
     transaction_profits = list()
     currency_transaction_profits = dict()
     currency_profits = dict()
-
-    # Define transaction_profits
-    index_transaction_date = 0
-    index_transaction_profit = 1
-
-    # Define datastructures
-    index_amounts_date = 0
-    index_amounts_amount = 1
 
     # TODO: Append lists [amount, date] to datastructure
     # Define orders
@@ -77,13 +65,13 @@ def calculate_profit(transactions, order, fiat):
     for transaction in transactions:
         if transaction == None: continue # Made to prevent NoneType is not subscriptable error
         
-        date = transaction[index_date]
-        currency_sold = transaction[index_currency_sold]
-        amount_sold = transaction[index_amount_sold]
-        price_sold = transaction[index_price_sold]
-        currency_bought = transaction[index_currency_bought]
-        amount_bought = transaction[index_amount_bought]
-        price_bought = transaction[index_price_bought]
+        date = transaction[transaction_index["date"]]
+        currency_sold = transaction[transaction_index["currency_sold"]]
+        amount_sold = transaction[transaction_index["amount_sold"]]
+        price_sold = transaction[transaction_index["price_sold"]]
+        currency_bought = transaction[transaction_index["currency_bought"]]
+        amount_bought = transaction[transaction_index["amount_bought"]]
+        price_bought = transaction[transaction_index["price_bought"]]
 
         # Initialize transaction profit of currency sold ([date, transaction_profit])
         transaction_profits.append(0)
@@ -110,7 +98,7 @@ def calculate_profit(transactions, order, fiat):
                 income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
                 element_profit = income_sold - cost_bought
                 transaction_profits[counter] += element_profit
-                currency_transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
+                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += element_profit
                 currency_profits[currency_sold] += element_profit
                 amounts[currency_sold].re_enqueue([temporary_date_currency_sold, temporary_amount_currency_sold])
                 temporary_amount_sold = 0
@@ -120,7 +108,7 @@ def calculate_profit(transactions, order, fiat):
             cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
             income_sold = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
             element_profit = income_sold - cost_bought
-            currency_transaction_profits[currency_sold][index_transaction][index_transaction_profit] += element_profit
+            currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += element_profit
             currency_profits[currency_sold] += element_profit
             temporary_amount_sold -= temporary_amount_currency_sold     # TODO: Fix case where sold amount > stored amount (infinite runs)
 
@@ -151,3 +139,35 @@ def isValidFiat(fiat):
         return True
 
     return False
+
+def get_transaction_index():
+    
+    transaction_index = {
+        "date": 0,
+        "currency_sold": 1,
+        "amount_sold": 2,
+        "price_sold": 3,
+        "currency_bought": 4,
+        "amount_bought": 5,
+        "price_bought": 6
+    }
+    
+    return transaction_index
+
+def get_transaction_profits_index():
+    
+    transaction_profits_index = {
+        "date": 0,
+        "profit": 1
+    }
+    
+    return transaction_profits_index
+
+def get_amounts_index():
+    
+    amounts_index = {
+        "date": 0,
+        "amount": 1
+    }
+    
+    return amounts_index
