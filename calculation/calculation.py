@@ -75,7 +75,8 @@ def calculate_profit(transactions, order, fiat):
 
         # Initialize transaction profit of currency sold ([date, transaction_profit])
         transaction_profits.append(0)
-        # currency_transaction_profits[currency_sold].append[date, 0]
+        if currency_transaction_profits[currency_sold] == None: currency_transaction_profits[currency_sold] = []
+        currency_transaction_profits[currency_sold].append[date, 0]
         index_transaction = len(currency_transaction_profits[currency_sold]) - 1
 
         # Get price of currency sold
