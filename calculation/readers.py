@@ -112,7 +112,7 @@ class CoinbaseReader:
         time_format = get_time_format()
         
         # CSV
-        uncleaned_data = pd.read_csv(r'' + file_path + '', delimiter=',', quotechar='"', skiprows=7)
+        uncleaned_data = pd.read_csv(r'' + file_path + '', delimiter=',', quotechar='"', skiprows=7, lineterminator='\n')
         
         print(uncleaned_data.head())
         
