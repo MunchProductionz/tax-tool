@@ -3,51 +3,49 @@ import { randNumber } from "@ngneat/falso";
 
 import { CHART_COLORS } from "../styles/colors";
 import { Chart as ChartJS, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from 'chart.js';
+import { useEffect, useState } from "react";
 
 
 
 
-export function LineChart(){
-    ChartJS.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Title);    
 
-    const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+ChartJS.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Title);    
 
-    const data = {
-    labels,
-    datasets: [
-        {
-        label: 'Dataset 1',
-        data: labels.map(() => randNumber({ min: -1000, max: 1000 })),
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+const options = {
+    responsive: true,
+    plugins: {
+        legend: {
+            position: 'top' as const,
         },
+        title: {
+            display: true,
+            text: 'Chart.js Line Chart',
+        },
+    }
+}
+
+interface LineChartProps {
+  labels: any[],
+  values: number[]
+}
+
+export function LineChart(props: LineChartProps) {
+  const [chartData, setChartData] = useState<any>()
+
+  useEffect(() => {
+    setChartData({
+      labels: props.labels,
+      datasets: [
         {
-        label: 'Dataset 2',
-        data: labels.map(() => randNumber({ min: -1000, max: 1000 })),
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-    },
-],
-    };
+          label: '',
+          data: props.values,
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        },
+      ],
+    })
 
+  }, [props])
 
-    const options = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top' as const,
-            },
-            title: {
-                display: true,
-                text: 'Chart.js Line Chart',
-            },
-    },
-    };
-    return(
-        <Line 
-            data={data}
-            options={options}
-        />
-    )
-
+  if (chartData)  return <Line options={options} data={chartData} />;
+  else return null
 }
