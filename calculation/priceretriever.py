@@ -41,7 +41,9 @@ def get_average_price_crypto(date, ticker):
     
     return average_price
 
-
+def get_fiat_to_USD_conversion_rate(date, fiat):
+    
+    return None
 
 
 def get_price(date, ticker, fiat):
@@ -50,9 +52,10 @@ def get_price(date, ticker, fiat):
     average_usd_price_crypto = get_average_price_crypto(date, ticker)
 
     # Get fiat to USD conversion rate at date
-    
+    fiat_to_USD_conversion_rate = get_fiat_to_USD_conversion_rate(date, fiat)
 
     # Get fiat_price of currency on input date
+    fiat_price = average_usd_price_crypto * fiat_to_USD_conversion_rate
 
     return None
 
