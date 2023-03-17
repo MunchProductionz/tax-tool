@@ -108,6 +108,10 @@ def get_price(date, ticker, fiat):
         average_USD_price = get_average_USD_price_crypto(date, ticker)
 
     # Get fiat to USD conversion rate at date
+    if isUSDollar(fiat):
+        fiat_price = average_USD_price
+        return fiat_price
+    
     USD_to_fiat_conversion_rate = get_USD_to_fiat_conversion_rate(date, fiat)
 
     # Get fiat_price of currency on input date
