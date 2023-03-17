@@ -2,8 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from variables import currencies_full_names
-from variables import convert_values_to_lowercase
 from variables import days_in_months
+from variables import convert_values_to_lowercase
 from variables import isValidCurrency
 
 def get_average_price_crypto(date, ticker):
