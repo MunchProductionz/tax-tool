@@ -41,6 +41,31 @@ def get_average_USD_price_crypto(date, ticker):
     
     return average_price
 
+def get_fiat_to_USD_conversion_rate(date, fiat):
+    
+    # Get fiat currency
+    fiat_currency = fiat_currencies_full_names[fiat]
+    
+    # Send a GET request
+    url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + date
+    response = requests.get(url)
+    
+    # Parse the HTML content
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    # Find the table containing the historical price data
+    table = soup.find('table', {'class': "tablesorter ratesTable"})
+
+    # Convert to pandas dataframe
+    df_table = pd.read_html(str(table))[0]
+    
+    # Clean the data
+    df_table_currency = df_table['US Dollar']
+    df_table = df_table[(df_table_currency == fiat_currency)]
+    fiat_to_USD_conversion_rate = df_table["inv. 1.00 USD"].iloc[0]
+    
+    return fiat_to_USD_conversion_rate
+
 def get_USD_to_fiat_conversion_rate(date, fiat):
     
     # Get fiat currency
@@ -76,17 +101,17 @@ def get_price(date, ticker, fiat):
 
     # Get average USD price of currency
     if isUSDollar(ticker):
-        average_USD_price_crypto = 1
+        average_USD_price = 1
     elif isFiat(ticker):
-        average_USD_price_crypto = 1
+        average_USD_price = get_fiat_to_USD_conversion_rate(date, ticker)
     else:
-        average_USD_price_crypto = get_average_USD_price_crypto(date, ticker)
+        average_USD_price = get_average_USD_price_crypto(date, ticker)
 
     # Get fiat to USD conversion rate at date
     USD_to_fiat_conversion_rate = get_USD_to_fiat_conversion_rate(date, fiat)
 
     # Get fiat_price of currency on input date
-    fiat_price = average_USD_price_crypto * USD_to_fiat_conversion_rate
+    fiat_price = average_USD_price * USD_to_fiat_conversion_rate
     print(f'{fiat}: {str(fiat_price)}')
 
     return fiat_price
@@ -174,5 +199,6 @@ date = "2023-02-15"
 date_string = "20230228"
 
 # get_average_price_crypto(date, "LTC")
+# get_fiat_to_USD_conversion_rate(date, "NOK")
 # get_USD_to_fiat_conversion_rate(date, 'NOK')
-get_price(date, "BTC", "NOK")
+get_price(date, "NOK", "NOK")
