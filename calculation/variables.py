@@ -1,11 +1,15 @@
 ### Variables ###
 
-currencies_full_names = {
+cryptocurrencies_full_names = {
     
     # Cryptocurrencies
     'BTC': 'Bitcoin',
     'ETH': 'Ethereum',
     'LTC': 'Litecoin',
+    
+}
+
+fiat_currencies_full_names = {
     
     # Fiat currencies
     'USD': 'US Dollar',
@@ -91,6 +95,19 @@ def convert_values_to_lowercase(dictionary):
     return currencies_full_names_small_letters
 
 def isValidCurrency(currency):
-    if currency in currencies_full_names:
+    if currency in cryptocurrencies_full_names:
         return True
+    if currency in fiat_currencies_full_names:
+        return True
+    return False
+
+def isUSDollar(currency):
+    if currency == 'USD':
+        return True
+    return False
+
+def isFiat(currency):
+    if not isUSDollar(currency):
+        if currency in fiat_currencies_full_names:
+            return True
     return False

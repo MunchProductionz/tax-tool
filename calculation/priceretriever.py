@@ -1,15 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from variables import currencies_full_names
+from variables import fiat_currencies_full_names
+from variables import cryptocurrencies_full_names
 from variables import days_in_months
 from variables import convert_values_to_lowercase
 from variables import isValidCurrency
+from variables import isUSDollar
+from variables import isFiat
 
-def get_average_price_crypto(date, ticker):
+def get_average_USD_price_crypto(date, ticker):
     
     # Use ticker to get name of currency
-    currencies_full_names_lowercase = convert_values_to_lowercase(currencies_full_names)
+    currencies_full_names_lowercase = convert_values_to_lowercase(cryptocurrencies_full_names)
     currency = currencies_full_names_lowercase[ticker]
     
     # Get start and end date
@@ -41,7 +44,7 @@ def get_average_price_crypto(date, ticker):
 def get_USD_to_fiat_conversion_rate(date, fiat):
     
     # Get fiat currency
-    fiat_currency = currencies_full_names[fiat]
+    fiat_currency = fiat_currencies_full_names[fiat]
     
     # Send a GET request
     url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + date
@@ -72,13 +75,18 @@ def get_price(date, ticker, fiat):
     if not isValidCurrency(fiat): return None
 
     # Get average USD price of currency
-    average_usd_price_crypto = get_average_price_crypto(date, ticker)
+    if isUSDollar(ticker):
+        average_USD_price_crypto = 1
+    elif isFiat(ticker):
+        average_USD_price_crypto = 1
+    else:
+        average_USD_price_crypto = get_average_USD_price_crypto(date, ticker)
 
     # Get fiat to USD conversion rate at date
     USD_to_fiat_conversion_rate = get_USD_to_fiat_conversion_rate(date, fiat)
 
     # Get fiat_price of currency on input date
-    fiat_price = average_usd_price_crypto * USD_to_fiat_conversion_rate
+    fiat_price = average_USD_price_crypto * USD_to_fiat_conversion_rate
     print(f'{fiat}: {str(fiat_price)}')
 
     return fiat_price
