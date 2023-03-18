@@ -28,5 +28,5 @@ There are three pages to the output Excel-file:
 
 
 ## Websites Scraped
-- CoinGecko: [Crypto](https://www.coingecko.com/en/coins/bitcoin/historical_data?end_date=20230216&start_date=20230215#panel)
+- CoinGecko: [Crypto](https://www.coingecko.com/en/coins/bitcoin/historical_data?start_date=20230215&end_date=20230216#panel)
 - X-Rates: [Fiat](https://www.x-rates.com/historical/?from=USD&amount=1&date=2023-02-15)
