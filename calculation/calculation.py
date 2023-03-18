@@ -216,12 +216,12 @@ fiat = 'NOK'
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
-cleaned_transaction_1 = ["2022-11-12", "USD", 1000, 1, "BTC", 1, 1000]
-cleaned_transaction_2 = ["2022-11-15", "BTC", 0.25, 1200, "USD", 300, 1]
-cleaned_transaction_3 = ["2022-11-18", "USD", 750, 1, "BTC", 0.5, 1500]
-cleaned_transaction_4 = ["2022-11-22", "USD", 500, 1, "ETH", 5, 100]
-cleaned_transaction_5 = ["2022-11-27", "USD", 200, 1, "LTC", 4, 50]
-cleaned_transaction_6 = ["2022-12-05", "ETH", 2.5, 80, "USD", 200, 1]
+cleaned_transaction_1 = ["2022-11-12", "USD", 16939.105, 1, "BTC", 1, 16939.105]    # Added actual average price sold/bought
+cleaned_transaction_2 = ["2022-11-15", "BTC", 0.25, 16768.18, "USD", 4192.045, 1]   # Added actual average price sold/bought
+cleaned_transaction_3 = ["2022-11-18", "USD", 8356.345, 1, "BTC", 0.5, 16712.69]    # Added actual average price sold/bought
+cleaned_transaction_4 = ["2022-11-22", "USD", 5613.675, 1, "ETH", 5, 1122.735]      # Added actual average price sold/bought
+cleaned_transaction_5 = ["2022-11-27", "USD", 302.7, 1, "LTC", 4, 75.675]           # Added actual average price sold/bought
+cleaned_transaction_6 = ["2022-12-05", "ETH", 2.5, 1271.09, "USD", 3177.725, 1]     # Added actual average price sold/bought
 cleaned_transactions = [
     cleaned_transaction_1,
     cleaned_transaction_2,
