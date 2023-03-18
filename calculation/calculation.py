@@ -9,7 +9,7 @@ from priceretriever import get_price
 # - X Initialiser variabler for profitt per currency
 # - X Legg datastrukterer til i dictionary for profitt
 # - Utfør utregninger
-# -- / Hent priser
+# -- X Hent priser
 # -- X Hent antall i beholdning av salgscurrency
 # --- X Hvis beholdningsantall >= salgsantall: bruk av beholdningsantall (oppdater element)
 # --- X Hvis beholdningsantall < salgsantall: bruk opp og gå videre til neste antall til condition over stemmer
