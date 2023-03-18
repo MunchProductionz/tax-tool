@@ -101,6 +101,13 @@ def isValidCurrency(currency):
         return True
     return False
 
+def isValidFiat(currency):
+    if isUSDollar(currency):
+        return True
+    if isFiat(currency):
+        return True
+    return False
+
 def isUSDollar(currency):
     if currency == 'USD':
         return True

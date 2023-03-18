@@ -164,7 +164,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     
     # Write amount of currencies
     row = 5         # Starts at row 6 (5+1)
-    for currency, amount in amounts.items():
+    for currency, amount in amounts.items():            # TODO: Isn't "amount" actually Stack([date_1, amount_1], [date_2, amount_2], ...)?
         sheet.write('B' + str(row), currency)
         sheet.write('C' + str(row), amount.dequeue()[amount_index['amount']])
         row += 1
@@ -196,7 +196,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     row = 3         # Starts at row 4 (zero-indexed)
     column = 12     # Starts at column L (zero-indexed)
     currency_in_column = {}
-    for currency, amount in amounts.items():
+    for currency, amount in amounts.items():        # TODO: Isn't "amount" actually Stack([date_1, amount_1], [date_2, amount_2], ...)?
         
         # Define in and out columns
         in_column = column
