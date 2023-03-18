@@ -222,27 +222,45 @@ cleaned_transaction_3 = ["2022-11-18", "USD", 8356.345, 1, "BTC", 0.5, 16712.69]
 cleaned_transaction_4 = ["2022-11-22", "USD", 5613.675, 1, "ETH", 5, 1122.735]      # Added actual average price sold/bought
 cleaned_transaction_5 = ["2022-11-27", "USD", 302.7, 1, "LTC", 4, 75.675]           # Added actual average price sold/bought
 cleaned_transaction_6 = ["2022-12-05", "ETH", 2.5, 1271.09, "USD", 3177.725, 1]     # Added actual average price sold/bought
+cleaned_transaction_7 = ["2022-12-20", "BTC", 1, 16660.945, "ETH", 13.97214534903220, 1192.44]     # Added actual average price sold/bought
+
 cleaned_transactions = [
     cleaned_transaction_1,
     cleaned_transaction_2,
     cleaned_transaction_3,
     cleaned_transaction_4,
     cleaned_transaction_5,
-    cleaned_transaction_6
+    cleaned_transaction_6,
+    cleaned_transaction_7
 ]
 
 # Amounts
 amounts = {"BTC": Stack(), "ETH": Stack(), "LTC": Stack(), "USD": Stack()}
-amounts["BTC"].enqueue(["2022-11-15", 0.75])
+amounts["USD"].enqueue(["2022-11-12", -16939.105])  # No negative amounts
+amounts["BTC"].enqueue(["2022-11-12", 1])
+amounts["BTC"].dequeue()
+amounts["BTC"].enqueue(["2022-11-15", 0.25])
+amounts["USD"].enqueue(["2022-11-15", 4192.045])
+amounts["USD"].enqueue(["2022-11-18", -8356.345])   # No negative amounts
 amounts["BTC"].enqueue(["2022-11-18", 0.5])
-amounts["ETH"].enqueue(["2022-11-22", 2.5])
+amounts["USD"].enqueue(["2022-11-22", -5613.675])   # No negative amounts
+amounts["ETH"].enqueue(["2022-11-22", 5])
+amounts["USD"].enqueue(["2022-11-27", -302.7])      # No negative amounts
 amounts["LTC"].enqueue(["2022-11-27", 4])
-amounts["USD"].enqueue(["2022-12-05", 0])           # TODO: Handle fiat amounts (can't be negative (-1950))
+amounts["ETH"].dequeue()
+amounts["ETH"].enqueue(["2022-11-22", 2.5])
+amounts["USD"].enqueue(["2022-12-05", 3177.725])
+amounts["BTC"].dequeue()
+amounts["BTC"].dequeue()
+amounts["BTC"].enqueue(["2022-11-18", 0.25])
+amounts["ETH"].enqueue(["2022-12-20", 13.97214534903220])
+# TODO: Handle fiat amounts (can't be negative (-1950), not enqueue negative amounts)
+# TODO: Check if amounts[currency] is empty (Stack().isEmpty()). If yes, enqueue negative amount. If no, go as usual.
 
 # Profits
-transaction_profits = [0, 50, 0, 0, 0, -50]
-transaction_currency_profits = {"BTC": ["2022-11-15", 50], "ETH": ["2022-12-05", -30]}
-currency_profits = {"BTC": 50, "ETH": -30}          # LTC profit never realized. Not stored in currency_profits
+transaction_profits = [0, -287.737897030012, 0, 0, 0, 3120.9675287, -3884.60078742004]
+transaction_currency_profits = {"BTC": [["2022-11-15", -287.737897030012], ["2022-12-20", -3884.60078742004]], "ETH": ["2022-12-05", 3120.9675287]}
+currency_profits = {"BTC": -4172.33868445005, "ETH": 3120.9675287}          # LTC profit never realized. Not stored in currency_profits
 
 
 
