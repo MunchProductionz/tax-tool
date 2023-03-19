@@ -8,7 +8,7 @@ from datastructures import Queue
 # Transaction_profits: {[currency]: [date, profit], ...}
 # Currency_profits: {[currency]: profit, ...}
 
-def write_to_excel(transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits):
+def write_to_excel(transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits, amounts_history):
 
     # Initialization
     workbook, transactions_sheet, results_sheet, assets_sheet = initialize_workbook_and_worksheets()

@@ -44,6 +44,7 @@ def calculate_profit(transactions, order, fiat):
 
     # Initialize dictionaries
     amounts = dict()
+    amounts_history = dict()
     transaction_profits = list()
     currency_transaction_profits = dict()
     currency_profits = dict()
@@ -60,6 +61,7 @@ def calculate_profit(transactions, order, fiat):
         amounts[currency] = orders[order]
         currency_transaction_profits[currency] = []
         currency_profits[currency] = 0
+        amounts_history[currency] = []
 
     # Make calculation per transaction
     counter = 0
@@ -90,52 +92,69 @@ def calculate_profit(transactions, order, fiat):
         # Define index of last transaction in transaction_profits
         index_transaction = len(currency_transaction_profits[currency_sold]) - 1
 
-        # Get price of currency sold
+        # Get price of currency sold and bought
         fiat_price_of_currency_sold = get_price(date, currency_sold, fiat)
+        fiat_price_of_currency_bought = get_price(date, currency_bought, fiat)
 
         # Update amount and profit of currency sold
         temporary_amount_sold = amount_sold
         while temporary_amount_sold > 0:
             
             # Copy stored element amount and get price of stored element
+            # TODO: Need to handle case where asset with amount 0 is sold
             if amounts[currency_sold].isEmpty(): 
                 fiat_price_of_temporary_date_currency_sold = 0
                 temporary_amount_currency_sold = 0
-                cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
-                income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
-                element_profit = income_sold - cost_bought
-                transaction_profits[counter] += element_profit
-                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += element_profit
-                currency_profits[currency_sold] += element_profit
+                # cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold? Is supposed to be 0
+                # income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
+                fiat_cost_bought = temporary_amount_currency_sold * fiat_price_of_temporary_date_currency_sold   # TODO: Using only scraped prices
+                # fiat_income_sold = temporary_amount_sold * fiat_price_of_currency_sold
+                fiat_income_sold = 0                                                                             # TODO: Account for profits of initial buying currency (either as a negative or as an existing asset input from the user)                           
+                fiat_element_profit = fiat_income_sold - fiat_cost_bought                                                  # TODO: Make sure there are either no profits from initial buying currency, or it is accounted for (either as a negative or as an existing asset input by the user)
+                transaction_profits[counter] += fiat_element_profit
+                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit   # TODO: Handle that these are 0
+                currency_profits[currency_sold] += fiat_element_profit
                 break
             else:
-                temporary_date_currency_sold, temporary_amount_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
-                fiat_price_of_temporary_date_currency_sold = get_price(temporary_date_currency_sold, currency_sold, fiat)
+                temporary_date_currency_sold, temporary_amount_currency_sold, fiat_price_of_temporary_date_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
+                # fiat_price_of_temporary_date_currency_sold = get_price(temporary_date_currency_sold, currency_sold, fiat)
             
             # If stored element amount > sold amount (Base case)
             if temporary_amount_currency_sold >= temporary_amount_sold:
                 temporary_amount_currency_sold -= temporary_amount_sold
-                cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
-                income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
-                element_profit = income_sold - cost_bought
-                transaction_profits[counter] += element_profit
-                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += element_profit
-                currency_profits[currency_sold] += element_profit
+                # cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
+                # income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
+                fiat_cost_bought = temporary_amount_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
+                fiat_income_sold = temporary_amount_sold * fiat_price_of_currency_sold
+                fiat_element_profit = fiat_income_sold - fiat_cost_bought
+                transaction_profits[counter] += fiat_element_profit
+                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit
+                currency_profits[currency_sold] += fiat_element_profit
                 amounts[currency_sold].re_enqueue([temporary_date_currency_sold, temporary_amount_currency_sold])
                 temporary_amount_sold = 0
                 break
 
             # If stored element amount < sold amount
-            cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
-            income_sold = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
-            element_profit = income_sold - cost_bought
-            transaction_profits[counter] += element_profit
-            currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += element_profit
-            currency_profits[currency_sold] += element_profit
+            # cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
+            # income_sold = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
+            fiat_cost_bought = temporary_amount_currency_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Using only scraped prices
+            fiat_income_sold = temporary_amount_currency_sold * fiat_price_of_currency_sold
+            fiat_element_profit = fiat_income_sold - fiat_cost_bought
+            transaction_profits[counter] += fiat_element_profit
+            currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit
+            currency_profits[currency_sold] += fiat_element_profit
             temporary_amount_sold -= temporary_amount_currency_sold
 
         # Update amount of currency bought
-        amounts[currency_bought].enqueue([date, amount_bought])
+        amounts[currency_bought].enqueue([date, amount_bought, fiat_price_of_currency_bought])
+        
+        # Find value of transaction of currency sold and bought
+        fiat_value_currency_sold = amount_sold * -fiat_price_of_currency_sold
+        fiat_value_currency_bought = amount_bought * fiat_price_of_currency_bought
+        
+        # Update amounts_history of currency sold and bought
+        amounts_history[currency_sold].append([date, amount_sold, -fiat_price_of_currency_sold, fiat_value_currency_sold])
+        amounts_history[currency_bought].append([date, amount_bought, fiat_price_of_currency_bought, fiat_value_currency_bought])
         
         # Update counter
         counter += 1
@@ -148,7 +167,7 @@ def calculate_profit(transactions, order, fiat):
     print('# of transactions dropped: ' + str(counter_transactions_dropped))
     print('# of transaction in total: ' + str(counter))
 
-    return amounts, transaction_profits, currency_transaction_profits, currency_profits
+    return amounts, transaction_profits, currency_transaction_profits, currency_profits, amounts_history
 
 
 
@@ -234,26 +253,26 @@ cleaned_transactions = [
     cleaned_transaction_7
 ]
 
-# Amounts
-amounts = {"BTC": Stack(), "ETH": Stack(), "LTC": Stack(), "USD": Stack()}
-amounts["USD"].enqueue(["2022-11-12", -16939.105])  # No negative amounts
-amounts["BTC"].enqueue(["2022-11-12", 1])
+# Amounts (amounts[currency] = Queue([date_bought, remaining_amount, fiat_price_bought], ...))
+amounts = {"BTC": Queue(), "ETH": Queue(), "LTC": Queue(), "USD": Queue()}
+amounts["USD"].enqueue(["2022-11-12", -16939.105, 9.933868])  # No negative amounts
+amounts["BTC"].enqueue(["2022-11-12", 1, 168270.83310814])
 amounts["BTC"].dequeue()
-amounts["BTC"].enqueue(["2022-11-15", 0.25])
-amounts["USD"].enqueue(["2022-11-15", 4192.045])
-amounts["USD"].enqueue(["2022-11-18", -8356.345])   # No negative amounts
-amounts["BTC"].enqueue(["2022-11-18", 0.5])
-amounts["USD"].enqueue(["2022-11-22", -5613.675])   # No negative amounts
-amounts["ETH"].enqueue(["2022-11-22", 5])
-amounts["USD"].enqueue(["2022-11-27", -302.7])      # No negative amounts
-amounts["LTC"].enqueue(["2022-11-27", 4])
+amounts["BTC"].re_enqueue(["2022-11-12", 0.75, 168270.83310814])
+amounts["USD"].enqueue(["2022-11-15", 4192.045, 9.966489])
+amounts["USD"].enqueue(["2022-11-18", -8356.345, 10.1838640])   # No negative amounts
+amounts["BTC"].enqueue(["2022-11-18", 0.5, 170199.76203416])
+amounts["USD"].enqueue(["2022-11-22", -5613.675, 10.147814])   # No negative amounts
+amounts["ETH"].enqueue(["2022-11-22", 5, 11393.30595129])
+amounts["USD"].enqueue(["2022-11-27", -302.7, 9.883106])      # No negative amounts
+amounts["LTC"].enqueue(["2022-11-27", 4, 747.90404655])
 amounts["ETH"].dequeue()
-amounts["ETH"].enqueue(["2022-11-22", 2.5])
-amounts["USD"].enqueue(["2022-12-05", 3177.725])
+amounts["ETH"].re_enqueue(["2022-11-22", 2.5, 11393.30595129])
+amounts["USD"].enqueue(["2022-12-05", 3177.725, 9.945553])
 amounts["BTC"].dequeue()
 amounts["BTC"].dequeue()
-amounts["BTC"].enqueue(["2022-11-18", 0.25])
-amounts["ETH"].enqueue(["2022-12-20", 13.97214534903220])
+amounts["BTC"].re_enqueue(["2022-11-18", 0.25, 170199.76203416])
+amounts["ETH"].enqueue(["2022-12-20", 13.97214534903220, 11799.7959822])
 # TODO: Handle fiat amounts (can't be negative (-1950), not enqueue negative amounts)
 # TODO: Check if amounts[currency] is empty (Stack().isEmpty()). If yes, enqueue negative amount. If no, go as usual.
 
@@ -262,6 +281,22 @@ transaction_profits = [0, -287.737897030012, 0, 0, 0, 3120.9675287, -3884.600787
 transaction_currency_profits = {"BTC": [["2022-11-15", -287.737897030012], ["2022-12-20", -3884.60078742004]], "ETH": ["2022-12-05", 3120.9675287]}
 currency_profits = {"BTC": -4172.33868445005, "ETH": 3120.9675287}          # LTC profit never realized. Not stored in currency_profits
 
+# Amounts history (amounts_history[currency] = [[date_transaction, amount_transaction, fiat_price_signed, fiat_value_signed]])
+amounts_history = {"USD": [], "BTC": [], "ETH": [], "LTC": []}
+amounts_history["USD"].append(["2022-11-12", -16939.105, 9.933868, -168270.83310814])  
+amounts_history["BTC"].append(["2022-11-12", 1, 168270.83310814, 168270.83310814])
+amounts_history["BTC"].append(["2022-11-15", -0.25, 167119.88152002, -41779.970380005])
+amounts_history["USD"].append(["2022-11-15", 4192.045, 9.966489, 41779.970380005])
+amounts_history["USD"].append(["2022-11-18", -8356.345, 10.1838640, -85099.88101708])   
+amounts_history["BTC"].append(["2022-11-18", 0.5, 170199.76203416, 85099.88101708])
+amounts_history["USD"].append(["2022-11-22", -5613.675, 10.147814, -56966.52975645])  
+amounts_history["ETH"].append(["2022-11-22", 5, 11393.30595129, 56966.52975645])
+amounts_history["USD"].append(["2022-11-27", -302.7, 9.883106, -2991.6161862])     
+amounts_history["LTC"].append(["2022-11-27", 4, 747.90404655, 2991.6161862])
+amounts_history["ETH"].append(["2022-12-05", -2.5, 12641.69296277, -31604.232406925])
+amounts_history["USD"].append(["2022-12-05", 3177.725, 9.945553, 31604.232406925])
+amounts_history["BTC"].append(["2022-12-20", -1, 164868.464552225, -164868.464552225])
+amounts_history["ETH"].append(["2022-12-20", 13.97214534903220, 11799.7959822, 164868.464552225])
 
 
 calculate_profit(transactions, order, fiat)
