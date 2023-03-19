@@ -100,6 +100,8 @@ def calculate_profit(transactions, order, fiat):
         temporary_amount_sold = amount_sold
         while temporary_amount_sold > 0:
             
+            # TODO: Move into help methods?
+            
             # Copy stored element amount and get price of stored element
             # TODO: Need to handle case where asset with amount 0 is sold
             if amounts[currency_sold].isEmpty(): 
