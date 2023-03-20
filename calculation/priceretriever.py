@@ -205,4 +205,4 @@ date_string = "20230228"
 # get_average_price_crypto(date, "LTC")
 # get_fiat_to_USD_conversion_rate(date, "NOK")
 # get_USD_to_fiat_conversion_rate(date, 'NOK')
-get_price(date, "NOK", "NOK")
+get_price(date, "BTC", "NOK")

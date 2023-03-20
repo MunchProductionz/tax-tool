@@ -283,7 +283,7 @@ transaction_profits = [0, -287.737897030012, 0, 0, 0, 3120.9675287, -3884.600787
 transaction_currency_profits = {"BTC": [["2022-11-15", -287.737897030012], ["2022-12-20", -3884.60078742004]], "ETH": ["2022-12-05", 3120.9675287]}
 currency_profits = {"BTC": -4172.33868445005, "ETH": 3120.9675287}          # LTC profit never realized. Not stored in currency_profits
 
-# Amounts history (amounts_history[currency] = [[date_transaction, amount_transaction, fiat_price_signed, fiat_value_signed]])
+# Amounts history (amounts_history[currency] = [[date_transaction, amount_transaction_signed, fiat_price, fiat_value_signed]])
 amounts_history = {"USD": [], "BTC": [], "ETH": [], "LTC": []}
 amounts_history["USD"].append(["2022-11-12", -16939.105, 9.933868, -168270.83310814])  
 amounts_history["BTC"].append(["2022-11-12", 1, 168270.83310814, 168270.83310814])
