@@ -23,6 +23,6 @@ Make all necessary imports using:
 
 - `pip install -r requirements.txt`
 
-*Created the `requirements.txt` file using:
+*Created the `requirements.txt` file using:*
 
-- `conda list -e > requirements.txt`*
+- `conda list -e > requirements.txt`
