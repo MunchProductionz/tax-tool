@@ -25,4 +25,4 @@ Make all necessary imports using:
 
 *Created the `requirements.txt` file using:*
 
-- `conda list -e > requirements.txt`
+- `pip freeze > requirements.txt`
