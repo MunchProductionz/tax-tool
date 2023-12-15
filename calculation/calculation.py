@@ -73,96 +73,88 @@ def calculate_profit(transactions, order, fiat):
             counter_transactions_dropped += 1
             print('Transaction ' + str(counter) + ' was dropped (Transaction == None).')
             continue # Made to prevent NoneType is not subscriptable error
-        
-        date = transaction[transaction_index["date"]]
-        currency_sold = transaction[transaction_index["currency_sold"]]
-        amount_sold = transaction[transaction_index["amount_sold"]]
-        price_sold = transaction[transaction_index["price_sold"]]
-        currency_bought = transaction[transaction_index["currency_bought"]]
-        amount_bought = transaction[transaction_index["amount_bought"]]
-        price_bought = transaction[transaction_index["price_bought"]]
-
-        # Initialize transaction profit of currency sold ([date, transaction_profit])
-        transaction_profits.append(0)
-        if currency_transaction_profits[currency_sold] == None:
-            currency_transaction_profits[currency_sold] = [[date, 0]]
         else:
-            currency_transaction_profits[currency_sold].append([date, 0])
-            
-        # Define index of last transaction in transaction_profits
-        index_transaction = len(currency_transaction_profits[currency_sold]) - 1
+            date = transaction[transaction_index["date"]]
+            currency_sold = transaction[transaction_index["currency_sold"]]
+            amount_sold = transaction[transaction_index["amount_sold"]]
+            price_sold = transaction[transaction_index["price_sold"]]
+            currency_bought = transaction[transaction_index["currency_bought"]]
+            amount_bought = transaction[transaction_index["amount_bought"]]
+            price_bought = transaction[transaction_index["price_bought"]]
 
-        # Get price of currency sold and bought
-        fiat_price_of_currency_sold = get_price(date, currency_sold, fiat)
-        fiat_price_of_currency_bought = get_price(date, currency_bought, fiat)
-
-        # Update amount and profit of currency sold
-        temporary_amount_sold = amount_sold
-        while temporary_amount_sold > 0:
-            
-            # TODO: Move into help methods?
-            
-            # Copy stored element amount and get price of stored element
-            # TODO: Need to handle case where asset with amount 0 is sold
-            if amounts[currency_sold].isEmpty(): 
-                fiat_price_of_temporary_date_currency_sold = 0
-                temporary_amount_currency_sold = 0
-                # cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold? Is supposed to be 0
-                # income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
-                fiat_cost_bought = temporary_amount_currency_sold * fiat_price_of_temporary_date_currency_sold   # TODO: Using only scraped prices
-                # fiat_income_sold = temporary_amount_sold * fiat_price_of_currency_sold
-                fiat_income_sold = 0                                                                             # TODO: Account for profits of initial buying currency (either as a negative or as an existing asset input from the user)                           
-                fiat_element_profit = fiat_income_sold - fiat_cost_bought                                                  # TODO: Make sure there are either no profits from initial buying currency, or it is accounted for (either as a negative or as an existing asset input by the user)
-                transaction_profits[counter] += fiat_element_profit
-                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit   # TODO: Handle that these are 0
-                currency_profits[currency_sold] += fiat_element_profit
-                break
+            # Initialize transaction profit of currency sold ([date, transaction_profit])
+            transaction_profits.append(0)
+            if currency_transaction_profits[currency_sold] == None:
+                currency_transaction_profits[currency_sold] = [[date, 0]]
             else:
-                temporary_date_currency_sold, temporary_amount_currency_sold, fiat_price_of_temporary_date_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing
-                # fiat_price_of_temporary_date_currency_sold = get_price(temporary_date_currency_sold, currency_sold, fiat)
+                currency_transaction_profits[currency_sold].append([date, 0])
+                
+            # Define index of last transaction in transaction_profits
+            index_transaction = len(currency_transaction_profits[currency_sold]) - 1
+
+            # Get price of currency sold and bought
+            fiat_price_of_currency_sold = get_price(date, currency_sold, fiat)
+            fiat_price_of_currency_bought = get_price(date, currency_bought, fiat)
+
+            # Update amount and profit of currency sold
+            temporary_amount_sold = amount_sold
+            while temporary_amount_sold > 0:
+                
+                # TODO: Move into help methods?
+                
+                # Copy stored element amount and get price of stored element
+                # TODO: Need to handle case where asset with amount 0 is sold
+                if amounts[currency_sold].isEmpty(): 
+                    fiat_cost_bought = 0
+                    fiat_income_sold = temporary_amount_sold * fiat_price_of_currency_sold          # Assumes amount sold is 100% profit
+                    # fiat_income_sold = 0                                                                             # TODO: Account for profits of initial buying currency (either as a negative or as an existing asset input from the user)                           
+                    fiat_element_profit = fiat_income_sold - fiat_cost_bought                                                  # TODO: Make sure there are either no profits from initial buying currency, or it is accounted for (either as a negative or as an existing asset input by the user)
+                    transaction_profits[counter] += fiat_element_profit
+                    currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit   # TODO: Handle that these are 0
+                    currency_profits[currency_sold] += fiat_element_profit
+                    temporary_amount_sold = 0       # Stops the while loop
+                else:
+                    temporary_date_currency_sold, temporary_amount_currency_sold, fiat_price_of_temporary_date_currency_sold = amounts[currency_sold].dequeue()       # TODO: Handle case when no amount is enqueued before dequeuing (NOTE: should be fixed by the if statement above)
+                
+                    # If stored element amount > sold amount (Base case)
+                    if temporary_amount_currency_sold >= temporary_amount_sold:
+                        temporary_amount_currency_sold -= temporary_amount_sold
+                        fiat_cost_bought = temporary_amount_sold * fiat_price_of_temporary_date_currency_sold
+                        fiat_income_sold = temporary_amount_sold * fiat_price_of_currency_sold
+                        fiat_element_profit = fiat_income_sold - fiat_cost_bought
+                        transaction_profits[counter] += fiat_element_profit
+                        currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit
+                        currency_profits[currency_sold] += fiat_element_profit
+                        updated_amount_currency_sold = temporary_amount_currency_sold - temporary_amount_sold
+                        if updated_amount_currency_sold > 0:
+                            amounts[currency_sold].re_enqueue([temporary_date_currency_sold, updated_amount_currency_sold, fiat_price_of_temporary_date_currency_sold])
+                        temporary_amount_sold = 0       # Stops the while loop
+                    else:
+                        # If stored element amount < sold amount
+                        fiat_cost_bought = temporary_amount_currency_sold * fiat_price_of_temporary_date_currency_sold
+                        fiat_income_sold = temporary_amount_currency_sold * fiat_price_of_currency_sold
+                        fiat_element_profit = fiat_income_sold - fiat_cost_bought
+                        transaction_profits[counter] += fiat_element_profit
+                        currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit
+                        currency_profits[currency_sold] += fiat_element_profit
+                        temporary_amount_sold -= temporary_amount_currency_sold
+    
+            # Update amount of currency bought
+            amounts[currency_bought].enqueue([date, amount_bought, fiat_price_of_currency_bought])
             
-            # If stored element amount > sold amount (Base case)
-            if temporary_amount_currency_sold >= temporary_amount_sold:
-                temporary_amount_currency_sold -= temporary_amount_sold
-                # cost_bought = temporary_amount_sold * price_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
-                # income_sold = temporary_amount_sold * price_sold * fiat_price_of_currency_sold
-                fiat_cost_bought = temporary_amount_sold * fiat_price_of_temporary_date_currency_sold       # TODO: Correct to use price_sold?
-                fiat_income_sold = temporary_amount_sold * fiat_price_of_currency_sold
-                fiat_element_profit = fiat_income_sold - fiat_cost_bought
-                transaction_profits[counter] += fiat_element_profit
-                currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit
-                currency_profits[currency_sold] += fiat_element_profit
-                amounts[currency_sold].re_enqueue([temporary_date_currency_sold, temporary_amount_currency_sold])
-                temporary_amount_sold = 0
-                break
-
-            # If stored element amount < sold amount
-            # cost_bought = temporary_amount_currency_sold * price_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Correct to use price_sold?
-            # income_sold = temporary_amount_currency_sold * price_sold * fiat_price_of_currency_sold
-            fiat_cost_bought = temporary_amount_currency_sold * fiat_price_of_temporary_date_currency_sold  # TODO: Using only scraped prices
-            fiat_income_sold = temporary_amount_currency_sold * fiat_price_of_currency_sold
-            fiat_element_profit = fiat_income_sold - fiat_cost_bought
-            transaction_profits[counter] += fiat_element_profit
-            currency_transaction_profits[currency_sold][index_transaction][transaction_profits_index["profit"]] += fiat_element_profit
-            currency_profits[currency_sold] += fiat_element_profit
-            temporary_amount_sold -= temporary_amount_currency_sold
-
-        # Update amount of currency bought
-        amounts[currency_bought].enqueue([date, amount_bought, fiat_price_of_currency_bought])
-        
-        # Find value of transaction of currency sold and bought
-        fiat_value_currency_sold = amount_sold * -fiat_price_of_currency_sold
-        fiat_value_currency_bought = amount_bought * fiat_price_of_currency_bought
-        
-        # Update amounts_history of currency sold and bought
-        amounts_history[currency_sold].append([date, amount_sold, -fiat_price_of_currency_sold, fiat_value_currency_sold])
-        amounts_history[currency_bought].append([date, amount_bought, fiat_price_of_currency_bought, fiat_value_currency_bought])
-        
-        # Update counter
-        counter += 1
-        counter_transactions_completed += 1
-        
-        print('Transaction ' + str(counter) + ' completed.')
+            # Find value of transaction of currency sold and bought
+            fiat_value_currency_sold = amount_sold * -fiat_price_of_currency_sold
+            fiat_value_currency_bought = amount_bought * fiat_price_of_currency_bought
+            
+            # Update amounts_history of currency sold and bought
+            amounts_history[currency_sold].append([date, amount_sold, -fiat_price_of_currency_sold, fiat_value_currency_sold])
+            amounts_history[currency_bought].append([date, amount_bought, fiat_price_of_currency_bought, fiat_value_currency_bought])
+            
+            # Update counter
+            counter += 1
+            counter_transactions_completed += 1
+            
+            print('Transaction ' + str(counter) + ' completed.')
     
     
     print('# of transactions completed: ' + str(counter_transactions_completed))

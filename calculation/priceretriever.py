@@ -94,10 +94,9 @@ def get_USD_to_fiat_conversion_rate(date, fiat):
 
 def get_price(date, ticker, fiat):
 
-    # TODO: Add actual error handling
     # Error handling
-    if not isValidCurrency(ticker): return None
-    if not isValidCurrency(fiat): return None
+    if not isValidCurrency(ticker): return None     # TODO: Add actual error handling
+    if not isValidCurrency(fiat): return None       # TODO: Add actual error handling
 
     # Get average USD price of currency
     if isUSDollar(ticker):

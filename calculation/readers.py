@@ -1,5 +1,6 @@
 import pandas as pd
 import glob
+import re
 
 #Functions:
 # - *Define readers ({exchange: <reader>})
@@ -19,7 +20,7 @@ def get_files():
     # TODO: Handle case when file is not valid type
 
     # Create lists of uploaded files
-    files = list()
+    files = list()          # TODO: Rewrite to use dictionary with lists instead of 2D-list
     
     # Get valid exchanges
     exchanges = get_exchanges()
@@ -28,8 +29,6 @@ def get_files():
     for exchange in exchanges:
         for file_path in glob.glob("../files/*" + exchange + "*"):
             files.append([exchange, file_path])
-
-    print(files)
 
     return files
 
@@ -110,12 +109,24 @@ class CoinbaseReader:
     def read_file(self, file_path):
         
         time_format = get_time_format()
+        number_of_rows_skipped = 7
+        
+        print("YOOOOO")
+        
+        # TODO: Implement regex (optional) to remove " " around rows. (Can't read CSV with open())
+        # TODO: Verify with updated testfile that formatting is correct.
         
         # CSV
-        uncleaned_data = pd.read_csv(r'' + file_path + '', delimiter=',', quotechar='"', skiprows=7)
+        uncleaned_data = pd.read_csv(r'' + file_path + '', delimiter=',', quotechar='"', skiprows=number_of_rows_skipped)
+        
+        print(uncleaned_data.head())
+        print("BROOOO")
         
         # cleaned_data = uncleaned_data[["Date(UTC)"]]
         cleaned_data = uncleaned_data[["Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "USD Spot Price at Transaction", "USD Subtotal"]]
+        
+        
+        print("CLEANED")
         
         print(cleaned_data.head())
         
@@ -247,7 +258,10 @@ readers = get_readers()
 exchange = files[1][0]
 file_path = files[1][1]
 print(files)
+print(exchange)
 print(file_path)
+print(readers)
+print(readers[exchange])
 read_file(readers[exchange], file_path)
 
 
