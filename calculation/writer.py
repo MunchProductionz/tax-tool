@@ -1,6 +1,8 @@
 import xlsxwriter
+from datetime import date
 from datastructures import Stack
 from datastructures import Queue
+# from priceretriever import get_price      # TODO: Add when get_price() is fixed
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
@@ -8,7 +10,7 @@ from datastructures import Queue
 # Transaction_profits: {[currency]: [date, profit], ...}
 # Currency_profits: {[currency]: profit, ...}
 
-def write_to_excel(transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits, amounts_history):
+def write_to_excel(transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits, amounts_history=None):
 
     # Initialization
     workbook, transactions_sheet, results_sheet, assets_sheet = initialize_workbook_and_worksheets()
@@ -153,50 +155,72 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     column_index = get_column_index()
     transaction_index = get_transaction_index()
     
+    # Get number of transactions
+    number_of_transactions = len(transactions)
+    
     # Write headers
     sheet.write('B2', "Assets", format["sheet_header"])
     sheet.write('B4', "Currency", format["column_header"])
     sheet.write('C4', "Amount", format["column_header"])
+    sheet.write('D4', "Value (USD)", format["column_header"])
+    sheet.write('E4', "Value (%)", format["column_header"])
     
     # Set column-width
-    sheet.set_column(1, 1, 12)
-    sheet.set_column(2, 2, 15, format["center_align"])
+    sheet.set_column(1, 1, 10)
+    sheet.set_column(2, 2, 12, format["center_align"])
+    sheet.set_column(3, 3, 14, format["center_align"])
+    sheet.set_column(4, 4, 10, format["center_align_percentage"])
     
     # Write amount of currencies
     row = 5         # Starts at row 6 (5+1)
-    for currency, amount in amounts.items():            # TODO: Isn't "amount" actually Stack([date_1, amount_1], [date_2, amount_2], ...)?
+    date_today = date.today()
+    # value_of_currencies = {}                                                                      # TODO: Add when get_price() is fixed
+    for currency, amount in amounts.items():            # Remember that amount is a datastructure, which cannot be copied (pop permanently removes items from datastructure)
         sheet.write('B' + str(row), currency)
-        sheet.write('C' + str(row), amount.dequeue()[amount_index['amount']])
+        currency_amount = 0
+        while not amount.isEmpty():
+            currency_amount += amount.dequeue()[amount_index["amount"]]
+        # currency_value = get_price(date_today, currency, "USD") * currency_amount                 # TODO: Add when get_price() is fixed
+        # value_of_currencies[currency] = currency_value                                            # TODO: Add when get_price() is fixed
+        sheet.write('C' + str(row), currency_amount)
+        # sheet.write('D' + str(row), currency_value)                                               # TODO: Add when get_price() is fixed
         row += 1
-    
-    # TODO: Use get_price() to get current value of amounts, use values to create pie chart
+        
+    # Write % value of currencies                                                                   # TODO: Add when get_price() is fixed
+    # row = 5         # Starts at row 6 (5+1)
+    # sum_value_of_currencies = sum(value_of_currencies.values())                                   
+    # for currency, currency_value in value_of_currencies.items():
+    #     percentage_of_total_value = currency_value / sum_value_of_currencies
+    #     sheet.write('E' + str(row), round(percentage_of_total_value, 2))
+    #     row += 1
     
     # Add series to the pie chart
     pie_chart.add_series({
         'name': '=Assets!$B$2',
         'categories': '=Assets!$B$5:$B$' + str(row),
         'values': '=Assets!$C$5:$C$' + str(row),
+        # 'values': '=Assets!$D$5:$D$' + str(row),          # TODO: Change to this when get_price() is fixed
         'data_labels': {'value': True, 'num_format': '#,##0.00'}
     })
     
     # Insert chart into sheet
-    sheet.insert_chart('D4', pie_chart)
+    sheet.insert_chart('F4', pie_chart)
     
     
     # Write headers
-    sheet.write('L2', "Transactions", format["sheet_subheader"])
-    sheet.merge_range('L4:L5', "Date", format["merged_header_left_align_bottom_border"])
-    sheet.write('L6', "SUM Total", format["column_header"])
-    sheet.write('L7', "SUM", format["column_header"])
+    sheet.write('N2', "Transactions", format["sheet_subheader"])
+    sheet.merge_range('N4:N5', "Date", format["merged_header_left_align_bottom_border"])
+    sheet.write('N6', "SUM Total", format["column_header"])
+    sheet.write('N7', "SUM", format["column_header"])
     
-    # Set column-width
-    sheet.set_column(11, 11, 12)
+    # Set column-width, column N
+    sheet.set_column(13, 13, 12)
     
     # Write headers for currencies
     row = 3         # Starts at row 4 (zero-indexed)
-    column = 12     # Starts at column L (zero-indexed)
+    column = 14     # Starts at column N (zero-indexed)
     currency_in_column = {}
-    for currency, amount in amounts.items():        # TODO: Isn't "amount" actually Stack([date_1, amount_1], [date_2, amount_2], ...)?
+    for currency, _ in amounts.items():         # Only uses currencies to set number of headers for the transactions
         
         # Define in and out columns
         in_column = column
@@ -212,8 +236,8 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         sheet.merge_range(row + 2, in_column, row + 2, out_column, total_sum_formula, format["merged_header_full_border"])
         
         # Write formula of "In" and "Out" column
-        sum_formula_in = "=SUM(" + column_index[in_column] + str(row + 5) + ":" + column_index[in_column] + str(row + 497) + ")"
-        sum_formula_out = "=SUM(" + column_index[out_column] + str(row + 5) + ":" + column_index[out_column] + str(row + 497) + ")"
+        sum_formula_in = "=SUM(" + column_index[in_column] + str(row + 5) + ":" + column_index[in_column] + str(row + 4 + number_of_transactions) + ")"
+        sum_formula_out = "=SUM(" + column_index[out_column] + str(row + 5) + ":" + column_index[out_column] + str(row + 4 + number_of_transactions) + ")"
         sheet.write(row + 3, in_column, sum_formula_in, format["center_align_left_and_bottom_borders"])
         sheet.write(row + 3, out_column, sum_formula_out, format["center_align_right_and_bottom_borders"])
         
@@ -221,10 +245,11 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         currency_in_column[currency] = in_column
         
         column += 2
-    
+
+
     # Update assets per transaction
     row = 8         # Starts at row 8
-    column = 11     # Starts at column L
+    column = 13     # Starts at column N
     for transaction in transactions:
         
         # Get column of currency bought and sold
@@ -243,6 +268,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         
         row += 1
         
+    # TODO: Format left border at all bought columns, and right border at all sold columns, for all transactions
         
     print('Assets sheet completed.') 
     
@@ -251,7 +277,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
 
 ### Helper Methods ###
 def initialize_workbook_and_worksheets():
-    workbook = xlsxwriter.Workbook('tax_info.xlsx')
+    workbook = xlsxwriter.Workbook('tax_info_test.xlsx')
     transactions_sheet = workbook.add_worksheet('Transactions')
     results_sheet = workbook.add_worksheet('Results')
     assets_sheet = workbook.add_worksheet('Assets')
@@ -276,6 +302,7 @@ def get_format(workbook):
         "merged_header_left_align": workbook.add_format({'bold': 1, 'align': 'left', 'valign': 'vcenter'}),
         "merged_header_left_align_bottom_border": workbook.add_format({'bold': 1, 'bottom': 1, 'align': 'left', 'valign': 'vcenter'}),
         "center_align": workbook.add_format({'align': 'center'}),
+        "center_align_percentage": workbook.add_format({'align': 'center', 'num_format': '0.00%'}),
         "center_align_left_border": workbook.add_format({'align': 'center', 'left': 1}),
         "center_align_right_border": workbook.add_format({'align': 'center', 'right': 1}),
         "center_align_side_borders": workbook.add_format({'align': 'center', 'left': 1, 'right': 1}),
@@ -285,6 +312,7 @@ def get_format(workbook):
         "center_align_right_and_bottom_borders": workbook.add_format({'align': 'center', 'right': 1, 'bottom': 1}),
         "center_align_left_and_top_borders": workbook.add_format({'align': 'center', 'left': 1, 'top': 1}),
         "center_align_right_and_top_borders": workbook.add_format({'align': 'center', 'right': 1, 'top': 1}),
+        "left_border": workbook.add_format({'left': 1}),
         "right_border": workbook.add_format({'right': 1}),
         "green": workbook.add_format({'bg_color': '#C6EFCE', 'font_color': '#006100'}),
         "red": workbook.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
