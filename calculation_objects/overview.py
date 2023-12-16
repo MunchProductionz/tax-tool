@@ -13,4 +13,4 @@ def run():
     files = FileReader().get_files()                                                                                    # Uses FileReader
     transactions = TransactionCleaner().get_transactions_from_files(files)                                              # Uses TransactionCleaner and ExchangeReaders
     amounts, transaction_profits, currency_profits = ProfitCalculator().calculate_profit(transactions, order, fiat)     # Uses ProfitCalculator, PriceRetriever and VariablesHolder
-    ExcelWriter().write_to_excel(transactions, amounts, transaction_profits, currency_profits)                          # Uses ExcelWriter
+    ExcelWriter().write_to_excel(transactions, amounts, transaction_profits, currency_profits)                          # Uses ExcelWriter 

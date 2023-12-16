@@ -371,6 +371,8 @@ class ExcelWriter:
         
         return orders
 
+
+    # TODO: Not currenctly used, remove?
     def get_unique_currencies(self, transactions):
         
         transaction_index = self.get_transaction_index()

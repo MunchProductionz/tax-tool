@@ -1,4 +1,4 @@
-class VariablesHolder:
+class VariablesHolder:      # Rename to NameHolder?
     
     def get_cryptocurrencies_full_names(self):
         
