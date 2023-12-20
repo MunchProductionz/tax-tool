@@ -1,5 +1,11 @@
+import os
 import requests
+import json
+import time
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+from io import StringIO
+from datetime import datetime
 import pandas as pd
 from variables import fiat_currencies_full_names
 from variables import cryptocurrencies_full_names
@@ -9,35 +15,31 @@ from variables import isValidCurrency
 from variables import isUSDollar
 from variables import isFiat
 
+
 def get_average_USD_price_crypto(date, ticker):
     
-    # Use ticker to get name of currency
-    currencies_full_names_lowercase = convert_values_to_lowercase(cryptocurrencies_full_names)
-    currency = currencies_full_names_lowercase[ticker]
+    # Get CoinGecko API key
+    load_dotenv()
+    api_key = os.environ["COINGECKO_API_KEY"]
     
-    # Get start and end date
-    start_date = get_start_date_string(date)
-    end_date = get_end_date_string(start_date)
+    # Get the id of the currency
+    supported_coins = get_supported_coins()
+    currency = cryptocurrencies_full_names[ticker]
+    currency_id = supported_coins[currency]
+    
+    # Format date
+    formatted_date = get_formatted_date(date)
     
     # Send a GET request
-    url = "https://www.coingecko.com/en/coins/" + currency + "/historical_data/?start_date=" + start_date + "&end_date=" + end_date + "#panel"
-    response = requests.get(url)
+    # - Use /coins/{id}/history endpoint
+    # - Date format: dd-mm-yyyy
+    url = "https://api.coingecko.com/api/v3/coins/" + currency_id + "/history?date=" + formatted_date + "&x_cg_demo_api_key=" + api_key
+    response = requests.get(url)    # TODO: Use API key?
+    response_json = json.loads(response.text)
+    average_price = response_json["market_data"]["current_price"]["usd"]
     
-    # Parse the HTML content
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-    # Find the table containing the historical price data
-    table = soup.find('table', {'class': "table table-striped text-sm text-lg-normal"})
-
-    # Convert to pandas dataframe
-    df_table = pd.read_html(str(table))
-    
-    # Clean the data
-    opening_price_usd = df_table[0]["Open"][1]
-    closing_price_usd = df_table[0]["Close"][1]
-    
-    # Calculate average daily price
-    average_price = get_average_price(opening_price_usd, closing_price_usd)
+    # with open(f'coin_data/{currency}_historical_data_{date}.json', 'w') as outfile:
+    #     outfile.write(json.dumps(response_json, indent=4))
     
     return average_price
 
@@ -57,7 +59,7 @@ def get_fiat_to_USD_conversion_rate(date, fiat):
     table = soup.find('table', {'class': "tablesorter ratesTable"})
 
     # Convert to pandas dataframe
-    df_table = pd.read_html(str(table))[0]
+    df_table = pd.read_html(StringIO(str(table)))[0]
     
     # Clean the data
     df_table_currency = df_table['US Dollar']
@@ -82,7 +84,7 @@ def get_USD_to_fiat_conversion_rate(date, fiat):
     table = soup.find('table', {'class': "tablesorter ratesTable"})
 
     # Convert to pandas dataframe
-    df_table = pd.read_html(str(table))[0]
+    df_table = pd.read_html(StringIO(str(table)))[0]
     
     # Clean the data
     df_table_currency = df_table['US Dollar']
@@ -109,18 +111,35 @@ def get_price(date, ticker, fiat):
     # Get fiat to USD conversion rate at date
     if isUSDollar(fiat):
         fiat_price = average_USD_price
+        # print(ticker + ":")
+        # print(f'Average USD price: {str(average_USD_price)}')
+        # print(f'Fiat price: {str(fiat_price)}')
         return fiat_price
     
     USD_to_fiat_conversion_rate = get_USD_to_fiat_conversion_rate(date, fiat)
 
     # Get fiat_price of currency on input date
     fiat_price = average_USD_price * USD_to_fiat_conversion_rate
-    print(f'{fiat}: {str(fiat_price)}')
+    # print(f'{fiat}: {str(fiat_price)}')
+
+    # print(ticker + ":")
+    # print(f'Average USD price: {str(average_USD_price)}')
+    # print(f'USD to {fiat} conversion rate: {str(USD_to_fiat_conversion_rate)}')
+    # print(f'Fiat price: {str(fiat_price)}')
 
     return fiat_price
 
 
 ### Helper Methods ###
+
+def get_formatted_date(date):
+    
+    day = date[8:]
+    month = date[5:7]
+    year = date[:4]
+    
+    formatted_date = day + "-" + month + "-" + year   
+    return formatted_date
 
 def get_start_date_string(date):
     
@@ -179,23 +198,47 @@ def isNewMonth(month, day):
     
     return False
 
-def get_average_price(opening_price_string, closing_price_string):
+def get_supported_coins() -> dict:
     
-    opening_price_int = get_price_int(opening_price_string)
-    closing_price_int = get_price_int(closing_price_string)
+    # Format: {ticker: name}
+    with open('coin_data/supported_coins.json') as json_file:
+        coins_dictionary = json.load(json_file)
     
-    return (opening_price_int + closing_price_int) / 2
+    return coins_dictionary
 
-def get_price_int(price_string):
+
+# NOTE: Not used
+def get_timestamp_format(date):
+    timestamp = time.mktime(datetime.strptime(date, "%Y-%m-%d").timetuple())
+    return timestamp
+
+# NOTE: Single time usage
+def store_supported_coins():
     
-    # TODO: Fix to fully account for floats (it currently removes everything after '.')
-    price_string_no_dollar_sign = price_string.replace('$', '')
-    price_string_no_comma = price_string_no_dollar_sign.replace(',', '')
-    if '.' in price_string_no_comma:
-        price_string_no_comma = price_string_no_comma[:price_string_no_comma.index('.')]
-    price_int = int(price_string_no_comma)
+    # Send a GET request
+    # - Use /coins/list endpoint
+    url = "https://api.coingecko.com/api/v3/coins/list"
+    response = requests.get(url)
     
-    return price_int
+    coins_json = json.loads(response.text)
+    with open('coin_data/supported_coins_raw.json', 'w') as outfile:
+        outfile.write(json.dumps(coins_json, indent=4))
+    
+    return None
+
+def reorganize_supported_coins():
+    
+    with open('coin_data/supported_coins_raw.json') as json_file:
+        coins_json = json.load(json_file)
+    
+    supported_coins = dict()
+    for coin in coins_json:
+        supported_coins[coin["name"]] = coin["id"]
+    
+    with open('coin_data/supported_coins.json', 'w') as outfile:
+        outfile.write(json.dumps(supported_coins, indent=4))
+    
+    return None
 
 
 date = "2023-02-15"
@@ -204,4 +247,10 @@ date_string = "20230228"
 # get_average_price_crypto(date, "LTC")
 # get_fiat_to_USD_conversion_rate(date, "NOK")
 # get_USD_to_fiat_conversion_rate(date, 'NOK')
-get_price(date, "BTC", "NOK")
+# get_price(date, "BTC", "NOK")
+
+# store_supported_coins()
+# reorganize_supported_coins()
+# supported_coins = get_supported_coins()
+# print(supported_coins["Bitcoin"])
+# print(supported_coins["BITCOIN"])
