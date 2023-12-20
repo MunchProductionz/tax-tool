@@ -95,6 +95,10 @@ def calculate_profit(transactions, order, fiat):
             # Get price of currency sold and bought
             fiat_price_of_currency_sold = get_price(date, currency_sold, fiat)
             fiat_price_of_currency_bought = get_price(date, currency_bought, fiat)
+            
+            print()
+            print(f'Currency sold: {currency_sold} - Amount sold: {amount_sold} - Fiat price of currency sold: {fiat_price_of_currency_sold}')
+            print(f'Currency bought: {currency_bought} - Amount bought: {amount_bought} - Fiat price of currency bought: {fiat_price_of_currency_bought}')
 
             # Update amount and profit of currency sold
             temporary_amount_sold = amount_sold
@@ -161,6 +165,19 @@ def calculate_profit(transactions, order, fiat):
     print('# of transactions dropped: ' + str(counter_transactions_dropped))
     print('# of transaction in total: ' + str(counter))
 
+    print('Amounts:')
+    print(amounts)
+    print()
+    print('Transaction profits:')
+    print(currency_transaction_profits)
+    print()
+    print('Currency profits:')
+    print(currency_profits)
+    print()
+    print('Amounts history:')
+    print(amounts_history)
+    print()
+
     return amounts, transaction_profits, currency_transaction_profits, currency_profits, amounts_history
 
 
@@ -223,7 +240,7 @@ transactions = [
 ]
 
 order = 'FIFO'
-fiat = 'NOK'
+fiat = 'USD'
 
 
 
