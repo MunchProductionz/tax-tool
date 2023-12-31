@@ -15,8 +15,17 @@ from variables import isValidCurrency
 from variables import isUSDollar
 from variables import isFiat
 
+def get_average_USD_price_crypto_locally(date, ticker):
 
-def get_average_USD_price_crypto(date, ticker):
+    with open(f'coin_data/coins_market_data.json', "r") as f:
+        data = json.load(f)
+        average_price = data[ticker][date]["current_price"]
+    
+    # print("Got average USD price of " + ticker + " on " + date + " from local storage")
+    
+    return average_price
+
+def get_average_USD_price_crypto_API(date, ticker):
     
     # Get CoinGecko API key
     load_dotenv()
@@ -34,7 +43,7 @@ def get_average_USD_price_crypto(date, ticker):
     # - Use /coins/{id}/history endpoint
     # - Date format: dd-mm-yyyy
     url = "https://api.coingecko.com/api/v3/coins/" + currency_id + "/history?date=" + formatted_date + "&x_cg_demo_api_key=" + api_key
-    response = requests.get(url)    # TODO: Use API key?
+    response = requests.get(url)
     response_json = json.loads(response.text)
     average_price = response_json["market_data"]["current_price"]["usd"]
     
@@ -106,7 +115,10 @@ def get_price(date, ticker, fiat):
     elif isFiat(ticker):
         average_USD_price = get_fiat_to_USD_conversion_rate(date, ticker)
     else:
-        average_USD_price = get_average_USD_price_crypto(date, ticker)
+        if is_average_USD_price_crypto_stored_locally(date, ticker):
+            average_USD_price = get_average_USD_price_crypto_locally(date, ticker)
+        else:
+            average_USD_price = get_average_USD_price_crypto_API(date, ticker)
 
     # Get fiat to USD conversion rate at date
     if isUSDollar(fiat):
@@ -206,7 +218,16 @@ def get_supported_coins() -> dict:
     
     return coins_dictionary
 
-
+def is_average_USD_price_crypto_stored_locally(date, ticker) -> bool:
+    
+    with open(f'coin_data/coins_market_data.json', "r") as f:
+        data = json.load(f)
+        if ticker in data and date in data[ticker]:
+            return True
+        else:
+            return False
+    
+    
 # NOTE: Not used
 def get_timestamp_format(date):
     timestamp = time.mktime(datetime.strptime(date, "%Y-%m-%d").timetuple())
@@ -241,13 +262,13 @@ def reorganize_supported_coins():
     return None
 
 
-date = "2023-02-15"
+date = "2023-01-01"
 date_string = "20230228"
 
 # get_average_price_crypto(date, "LTC")
 # get_fiat_to_USD_conversion_rate(date, "NOK")
 # get_USD_to_fiat_conversion_rate(date, 'NOK')
-# get_price(date, "BTC", "NOK")
+# print(get_price(date, "BTC", "NOK"))
 
 # store_supported_coins()
 # reorganize_supported_coins()
