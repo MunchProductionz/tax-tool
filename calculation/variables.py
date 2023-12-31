@@ -6,6 +6,7 @@ cryptocurrencies_full_names = {
     'BTC': 'Bitcoin',
     'ETH': 'Ethereum',
     'LTC': 'Litecoin',
+    'XRP': 'XRP',
     
 }
 
