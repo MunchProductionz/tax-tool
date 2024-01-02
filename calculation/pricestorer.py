@@ -185,9 +185,9 @@ def get_and_store_coin_market_data_USD_from_API(ticker, start_date, end_date, re
     
 ## Testing
 
-start_date = '2021-06-25'
-end_date = '2021-07-04'
-ticker = 'LTC'
+start_date = '2023-06-15'
+end_date = '2023-12-30'
+ticker = 'XRP'
 requests_per_minute = 20
 sleep_time = 42.8           # Empirically determined, gives ~7 seconds expected std (Average time is 84.21 seconds with 60 sec sleep time, max std is ~6.76 seconds)
 
