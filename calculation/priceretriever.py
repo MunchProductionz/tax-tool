@@ -46,12 +46,18 @@ def get_average_USD_price_crypto_API(date, ticker):
     url = "https://api.coingecko.com/api/v3/coins/" + currency_id + "/history?date=" + formatted_date + "&x_cg_demo_api_key=" + api_key
     response = requests.get(url)
     response_json = json.loads(response.text)
+    
     average_price = response_json["market_data"]["current_price"]["usd"]
+    market_data_USD = {
+            "current_price": response_json["market_data"]["current_price"]["usd"],
+            "market_cap": response_json["market_data"]["market_cap"]["usd"],
+            "total_volume": response_json["market_data"]["total_volume"]["usd"],
+        }
     
     # with open(f'coin_data/{currency}_historical_data_{date}.json', 'w') as outfile:
     #     outfile.write(json.dumps(response_json, indent=4))
     
-    return average_price
+    return average_price, market_data_USD
 
 def get_fiat_to_USD_conversion_rate(date, fiat):
     
@@ -118,17 +124,24 @@ def get_price(date, ticker, fiat):
 
     # Get average USD price of currency
     if isUSDollar(ticker):
+        print("Setting average USD price of " + ticker + " on " + date.strftime("%Y-%m-%d") + " to 1")
         average_USD_price = 1
     elif isFiat(ticker):
+        print("Getting average USD price of " + ticker + " on " + date.strftime("%Y-%m-%d") + " from X-Rates API")
         average_USD_price = get_fiat_to_USD_conversion_rate(date, ticker)
     else:
         if is_average_USD_price_crypto_stored_locally(date, ticker):
+            print("Getting average USD price of " + ticker + " on " + date.strftime("%Y-%m-%d") + " from local storage")
             average_USD_price = get_average_USD_price_crypto_locally(date, ticker)
         else:
-            average_USD_price = get_average_USD_price_crypto_API(date, ticker)
+            print("Getting average USD price of " + ticker + " on " + date.strftime("%Y-%m-%d") + " from CoinGecko API")
+            average_USD_price, market_data_USD = get_average_USD_price_crypto_API(date, ticker)
+            add_coin_market_data_USD(ticker, date, market_data_USD)
+            print("Added market data of " + ticker + " on " + date.strftime("%Y-%m-%d") + " to local storage")
 
     # Get fiat to USD conversion rate at date
     if isUSDollar(fiat):
+        print("Setting USD to " + fiat + " conversion rate on " + date.strftime("%Y-%m-%d") + " to 1")
         fiat_price = average_USD_price
         # print(ticker + ":")
         # print(f'Average USD price: {str(average_USD_price)}')
@@ -138,6 +151,7 @@ def get_price(date, ticker, fiat):
     USD_to_fiat_conversion_rate = get_USD_to_fiat_conversion_rate(date, fiat)
 
     # Get fiat_price of currency on input date
+    print('Getting fiat price of ' + fiat + ' on ' + date.strftime("%Y-%m-%d") + ' from X-Rates API')
     fiat_price = average_USD_price * USD_to_fiat_conversion_rate
     # print(f'{fiat}: {str(fiat_price)}')
 
@@ -151,6 +165,7 @@ def get_price(date, ticker, fiat):
 
 ### Helper Methods ###
 
+# NOTE: Not used
 def get_formatted_date(date):
     
     day = date[8:]
@@ -160,6 +175,7 @@ def get_formatted_date(date):
     formatted_date = day + "-" + month + "-" + year   
     return formatted_date
 
+# NOTE: Not used
 def get_start_date_string(date):
     
     # Example:
@@ -170,6 +186,7 @@ def get_start_date_string(date):
     
     return date_string
 
+# NOTE: Not used
 def get_end_date_string(date_string):
     
     # Example:
@@ -201,6 +218,7 @@ def get_end_date_string(date_string):
         
     return end_date_string
 
+# NOTE: Not used
 def isNewYear(month, day):
     
     if isNewMonth(month, day):
@@ -210,6 +228,7 @@ def isNewYear(month, day):
         
     return False
 
+# NOTE: Not used
 def isNewMonth(month, day):
     
     if day == days_in_months[month]:
@@ -229,7 +248,7 @@ def is_average_USD_price_crypto_stored_locally(date, ticker) -> bool:
     
     with open(f'coin_data/coins_market_data.json', "r") as f:
         data = json.load(f)
-        if ticker in data and date in data[ticker]:
+        if ticker in data and date.strftime("%Y-%m-%d") in data[ticker]:
             return True
         else:
             return False
@@ -267,6 +286,44 @@ def reorganize_supported_coins():
         outfile.write(json.dumps(supported_coins, indent=4))
     
     return None
+
+def add_coin_market_data_USD(ticker, date, market_data_USD) -> None:
+    
+    # Data template
+    # currency = {
+    #     date: market_data
+    # }
+    
+    # market_data = {
+    #     "currenct_price": float,
+    #     "market_cap": float,
+    #     "total_volume": float,
+    # }
+    
+    # Handle when market data does not exist
+    if market_data_USD == None:
+        return None
+    
+    date_string = date.strftime("%Y-%m-%d")
+    
+    # Currency does/does not exist, date does not exist
+    try:
+        with open(f'coin_data/coins_market_data.json', "r") as f:
+            data = json.load(f)
+            if ticker not in data:
+                data[ticker] = {}
+            data[ticker][date_string] = market_data_USD
+            new_data = json.dumps(data, indent=4)
+        with open(f'coin_data/coins_market_data.json', "w") as f:
+            f.write(new_data)
+    # File does not exist
+    except FileNotFoundError:
+        with open(f'coin_data/coins_market_data.json', "w") as f:
+            data = {}
+            data[ticker] = {}
+            data[ticker][date_string] = market_data_USD
+            new_data = json.dumps(data, indent=4)
+            f.write(new_data)
 
 
 date = "2023-01-01"
