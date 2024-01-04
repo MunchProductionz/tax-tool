@@ -2,6 +2,7 @@ from datastructures import Queue
 from datastructures import Stack
 from priceretriever import get_price
 from variables import isValidFiat
+from datetime import datetime
 
 #Steg:
 # - X Finn unike currencies
@@ -222,15 +223,24 @@ def get_amounts_index():
 
 
 ### Testing ###
+date_format = "%Y-%m-%d"
+date_1 = datetime.strptime("2022-11-12", date_format)
+date_2 = datetime.strptime("2022-11-15", date_format)
+date_3 = datetime.strptime("2022-11-18", date_format)
+date_4 = datetime.strptime("2022-11-22", date_format)
+date_5 = datetime.strptime("2022-11-27", date_format)
+date_6 = datetime.strptime("2022-12-05", date_format)
+date_7 = datetime.strptime("2022-12-20", date_format)
+
 
 # Transactions: [transaction1, transaction2, ...]
 # Transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
-transaction_1 = ["2022-11-12", "USD", 1000, 1, "BTC", 1, 1000]
-transaction_2 = ["2022-11-15", "BTC", 0.25, 1200, "USD", 300, 1]
-transaction_3 = ["2022-11-18", "USD", 750, 1, "BTC", 0.5, 1500]
-transaction_4 = ["2022-11-22", "USD", 500, 1, "ETH", 5, 100]
-transaction_5 = ["2022-11-27", "USD", 200, 1, "LTC", 4, 50]
-transaction_6 = ["2022-12-05", "ETH", 2.5, 80, "USD", 200, 1]
+transaction_1 = [date_1, "USD", 1000, 1, "BTC", 1, 1000]
+transaction_2 = [date_2, "BTC", 0.25, 1200, "USD", 300, 1]
+transaction_3 = [date_3, "USD", 750, 1, "BTC", 0.5, 1500]
+transaction_4 = [date_4, "USD", 500, 1, "ETH", 5, 100]
+transaction_5 = [date_5, "USD", 200, 1, "LTC", 4, 50]
+transaction_6 = [date_6, "ETH", 2.5, 80, "USD", 200, 1]
 transactions = [
     transaction_1,
     transaction_2,
@@ -247,13 +257,13 @@ fiat = 'USD'
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
-cleaned_transaction_1 = ["2022-11-12", "USD", 16939.105, 1, "BTC", 1, 16939.105]    # Added actual average price sold/bought
-cleaned_transaction_2 = ["2022-11-15", "BTC", 0.25, 16768.18, "USD", 4192.045, 1]   # Added actual average price sold/bought
-cleaned_transaction_3 = ["2022-11-18", "USD", 8356.345, 1, "BTC", 0.5, 16712.69]    # Added actual average price sold/bought
-cleaned_transaction_4 = ["2022-11-22", "USD", 5613.675, 1, "ETH", 5, 1122.735]      # Added actual average price sold/bought
-cleaned_transaction_5 = ["2022-11-27", "USD", 302.7, 1, "LTC", 4, 75.675]           # Added actual average price sold/bought
-cleaned_transaction_6 = ["2022-12-05", "ETH", 2.5, 1271.09, "USD", 3177.725, 1]     # Added actual average price sold/bought
-cleaned_transaction_7 = ["2022-12-20", "BTC", 1, 16660.945, "ETH", 13.97214534903220, 1192.44]     # Added actual average price sold/bought
+cleaned_transaction_1 = [date_1, "USD", 16939.105, 1, "BTC", 1, 16939.105]    # Added actual average price sold/bought
+cleaned_transaction_2 = [date_2, "BTC", 0.25, 16768.18, "USD", 4192.045, 1]   # Added actual average price sold/bought
+cleaned_transaction_3 = [date_3, "USD", 8356.345, 1, "BTC", 0.5, 16712.69]    # Added actual average price sold/bought
+cleaned_transaction_4 = [date_4, "USD", 5613.675, 1, "ETH", 5, 1122.735]      # Added actual average price sold/bought
+cleaned_transaction_5 = [date_5, "USD", 302.7, 1, "LTC", 4, 75.675]           # Added actual average price sold/bought
+cleaned_transaction_6 = [date_6, "ETH", 2.5, 1271.09, "USD", 3177.725, 1]     # Added actual average price sold/bought
+cleaned_transaction_7 = [date_7, "BTC", 1, 16660.945, "ETH", 13.97214534903220, 1192.44]     # Added actual average price sold/bought
 
 cleaned_transactions = [
     cleaned_transaction_1,
@@ -312,3 +322,4 @@ amounts_history["ETH"].append(["2022-12-20", 13.97214534903220, 11799.7959822, 1
 
 
 # calculate_profit(transactions, order, fiat)
+# calculate_profit(cleaned_transactions, order, fiat)
