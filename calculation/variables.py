@@ -7,7 +7,7 @@ cryptocurrencies_full_names = {
     'ETH': 'Ethereum',
     'LTC': 'Litecoin',
     'XRP': 'XRP',
-    
+    'POWR': 'Power Ledger',
 }
 
 fiat_currencies_full_names = {

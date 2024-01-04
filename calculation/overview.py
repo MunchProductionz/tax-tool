@@ -23,16 +23,20 @@ def run():
     # TODO: Move validation of order and fiat from calculate_profit to run()?
 
     files = get_files()
+    print('Finished getting files.')
     transactions = get_transactions_from_files(files)
-    amounts, transaction_profits, currency_profits = calculate_profit(transactions, order, fiat)
-    write_to_excel(transactions, amounts, transaction_profits, currency_profits)
-
-    print("What")
-    print(amounts)
-    print(transaction_profits)
-    print(currency_profits)
+    print('Finished getting transactions.')
+    amounts, transaction_profits, currency_transaction_profits, currency_profits, amounts_history = calculate_profit(transactions, order, fiat)
+    print()
+    print('Finished calculating profits.')
+    print()
+    write_to_excel(transactions, amounts, transaction_profits, currency_transaction_profits, currency_profits, amounts_history=amounts_history)
+    print()
+    print('Finished writing to excel.')
 
     ##visualize(transactions, amounts, transaction_profits, currency_profits)
+    
+run()
 
 
 # Things to do:

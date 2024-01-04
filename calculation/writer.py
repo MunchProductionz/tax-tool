@@ -2,7 +2,7 @@ import xlsxwriter
 from datetime import date
 from datastructures import Stack
 from datastructures import Queue
-# from priceretriever import get_price      # TODO: Add when get_price() is fixed
+from priceretriever import get_price      # TODO: Add when get_price() is fixed
 
 # Cleaned transactions: [transaction1, transaction2, ...]
 # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
@@ -10,7 +10,7 @@ from datastructures import Queue
 # Transaction_profits: {[currency]: [date, profit], ...}
 # Currency_profits: {[currency]: profit, ...}
 
-def write_to_excel(transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits, amounts_history=None):
+def write_to_excel(transactions, amounts, transaction_profits, currency_transaction_profits, currency_profits, amounts_history=None):
 
     # Initialization
     workbook, transactions_sheet, results_sheet, assets_sheet = initialize_workbook_and_worksheets()
@@ -27,16 +27,9 @@ def write_to_excel(transactions, amounts, transaction_profits, transaction_curre
     write_results_sheet(results_sheet, currency_profits, format, bar_chart)
     write_assets_sheet(assets_sheet, transactions, amounts, currency_profits, format, pie_chart)
 
-    # Profit per transaction
-    # - Write each transaction to a new line in excel
-    # - Write each transaction_profit to a new line in excel
-    # TODO: Fix
-
-
-
     # Assets and total profit per currency
     # - Write each transaction to a new line in excel (debit/credit per currency)
-    # - Write currency_profit per currency
+    # - Write currency_profit per currency  # TODO: Fix
 
     workbook.close()
 
@@ -85,7 +78,7 @@ def write_transactions_sheet(sheet, transactions, transactions_profits, format):
     # Write transactions
     row = 5                                # Starts at row 5 (+1)
     for transaction in transactions:
-        sheet.write('B' + str(row), transaction[transaction_index["date"]])
+        sheet.write('B' + str(row), transaction[transaction_index["date"]].strftime("%Y-%m-%d"))
         sheet.write('C' + str(row), transaction[transaction_index["currency_sold"]])
         sheet.write('D' + str(row), transaction[transaction_index["amount_sold"]])
         sheet.write('E' + str(row), transaction[transaction_index["price_sold"]])
@@ -174,32 +167,31 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
     # Write amount of currencies
     row = 5         # Starts at row 6 (5+1)
     date_today = date.today()
-    # value_of_currencies = {}                                                                      # TODO: Add when get_price() is fixed
+    value_of_currencies = {}                                                                   
     for currency, amount in amounts.items():            # Remember that amount is a datastructure, which cannot be copied (pop permanently removes items from datastructure)
         sheet.write('B' + str(row), currency)
         currency_amount = 0
         while not amount.isEmpty():
             currency_amount += amount.dequeue()[amount_index["amount"]]
-        # currency_value = get_price(date_today, currency, "USD") * currency_amount                 # TODO: Add when get_price() is fixed
-        # value_of_currencies[currency] = currency_value                                            # TODO: Add when get_price() is fixed
+        currency_value = get_price(date_today, currency, "USD") * currency_amount      
+        value_of_currencies[currency] = currency_value                              
         sheet.write('C' + str(row), currency_amount)
-        # sheet.write('D' + str(row), currency_value)                                               # TODO: Add when get_price() is fixed
+        sheet.write('D' + str(row), currency_value)                                   
         row += 1
         
-    # Write % value of currencies                                                                   # TODO: Add when get_price() is fixed
-    # row = 5         # Starts at row 6 (5+1)
-    # sum_value_of_currencies = sum(value_of_currencies.values())                                   
-    # for currency, currency_value in value_of_currencies.items():
-    #     percentage_of_total_value = currency_value / sum_value_of_currencies
-    #     sheet.write('E' + str(row), round(percentage_of_total_value, 2))
-    #     row += 1
+    # Write % value of currencies                                                          
+    row = 5         # Starts at row 6 (5+1)
+    sum_value_of_currencies = sum(value_of_currencies.values())                                   
+    for currency, currency_value in value_of_currencies.items():
+        percentage_of_total_value = currency_value / sum_value_of_currencies
+        sheet.write('E' + str(row), round(percentage_of_total_value, 2))
+        row += 1
     
     # Add series to the pie chart
     pie_chart.add_series({
         'name': '=Assets!$B$2',
         'categories': '=Assets!$B$5:$B$' + str(row),
-        'values': '=Assets!$C$5:$C$' + str(row),
-        # 'values': '=Assets!$D$5:$D$' + str(row),          # TODO: Change to this when get_price() is fixed
+        'values': '=Assets!$D$5:$D$' + str(row),          
         'data_labels': {'value': True, 'num_format': '#,##0.00'}
     })
     
@@ -262,7 +254,7 @@ def write_assets_sheet(sheet, transactions, amounts, currency_profits, format, p
         cell_currency_sold = column_index[out_column] + str(row)
         
         # Write date, amount bought and amount sold of transaction
-        sheet.write(cell_date, transaction[transaction_index["date"]], format["right_border"])
+        sheet.write(cell_date, transaction[transaction_index["date"]].strftime("%Y-%m-%d"), format["right_border"])
         sheet.write(cell_currency_bought, transaction[transaction_index["amount_bought"]], format["center_align"])
         sheet.write(cell_currency_sold, transaction[transaction_index["amount_sold"]], format["center_align"])
         
@@ -439,10 +431,10 @@ amounts["USD"].enqueue(["2022-12-05", 0])           # TODO: Handle fiat amounts 
 
 # Profits
 transaction_profits = [0, 50, 0, 0, 0, -50]
-transaction_currency_profits = {"BTC": ["2022-11-15", 50], "ETH": ["2022-12-05", -30]}
+currency_transaction_profits = {"BTC": ["2022-11-15", 50], "ETH": ["2022-12-05", -30]}
 currency_profits = {"BTC": 50, "ETH": -30}          # LTC profit never realized. Not stored in currency_profits
 
-write_to_excel(cleaned_transactions, amounts, transaction_profits, transaction_currency_profits, currency_profits)
+# write_to_excel(cleaned_transactions, amounts, transaction_profits, currency_transaction_profits, currency_profits)
 
 
 

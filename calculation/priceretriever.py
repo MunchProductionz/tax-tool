@@ -19,7 +19,8 @@ def get_average_USD_price_crypto_locally(date, ticker):
 
     with open(f'coin_data/coins_market_data.json', "r") as f:
         data = json.load(f)
-        average_price = data[ticker][date]["current_price"]
+        formatted_date = date.strftime("%Y-%m-%d")
+        average_price = data[ticker][formatted_date]["current_price"]
     
     # print("Got average USD price of " + ticker + " on " + date + " from local storage")
     
@@ -37,7 +38,7 @@ def get_average_USD_price_crypto_API(date, ticker):
     currency_id = supported_coins[currency]
     
     # Format date
-    formatted_date = get_formatted_date(date)
+    formatted_date = date.strftime("%d-%m-%Y")
     
     # Send a GET request
     # - Use /coins/{id}/history endpoint
@@ -57,8 +58,11 @@ def get_fiat_to_USD_conversion_rate(date, fiat):
     # Get fiat currency
     fiat_currency = fiat_currencies_full_names[fiat]
     
+    # Format date
+    formatted_date = date.strftime("%Y-%m-%d")
+    
     # Send a GET request
-    url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + date
+    url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + formatted_date
     response = requests.get(url)
     
     # Parse the HTML content
@@ -82,8 +86,11 @@ def get_USD_to_fiat_conversion_rate(date, fiat):
     # Get fiat currency
     fiat_currency = fiat_currencies_full_names[fiat]
     
+    # Format date
+    formatted_date = date.strftime("%Y-%m-%d")
+    
     # Send a GET request
-    url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + date
+    url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + formatted_date
     response = requests.get(url)
     
     # Parse the HTML content

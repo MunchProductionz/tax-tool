@@ -89,8 +89,6 @@ class BinanceReader:
         uncleaned_data = pd.read_excel(r'' + file_path + '')
         cleaned_data = uncleaned_data[["Date", "Market", "Type", "Price", "Amount", "Total"]]
         
-        print(cleaned_data.head())
-        
         transactions = []
         
         for row in range(len(cleaned_data)):

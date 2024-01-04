@@ -164,6 +164,7 @@ def calculate_profit(transactions, order, fiat):
     print('# of transactions completed: ' + str(counter_transactions_completed))
     print('# of transactions dropped: ' + str(counter_transactions_dropped))
     print('# of transaction in total: ' + str(counter))
+    print()
 
     print('Amounts:')
     print(amounts)
@@ -310,4 +311,4 @@ amounts_history["BTC"].append(["2022-12-20", -1, 164868.464552225, -164868.46455
 amounts_history["ETH"].append(["2022-12-20", 13.97214534903220, 11799.7959822, 164868.464552225])
 
 
-calculate_profit(transactions, order, fiat)
+# calculate_profit(transactions, order, fiat)

@@ -25,8 +25,6 @@ class TransactionCleaner:
         # Get reader
         reader = ExchangeReaders().get_reader(exchange)
 
-        print(file_path)
-
         # Read file
         transactions = ExchangeReaders().read_file(reader, file_path)
 

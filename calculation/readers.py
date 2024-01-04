@@ -83,7 +83,7 @@ class BinanceReader:
         
         for row in range(len(cleaned_data)):
             date = cleaned_data["Date"].loc[row]
-            date_formatted = datetime.strptime(date.strftime(time_format), time_format)     # Change from pandas timestamp to datetime
+            date_formatted = date.to_pydatetime()               # Change from pandas timestamp to datetime
             transaction_type = cleaned_data["Type"].loc[row]
             market = cleaned_data["Market"].loc[row]
             first_currency = get_first_currency(market)
@@ -108,12 +108,6 @@ class BinanceReader:
             
             transaction = [date_formatted, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
             transactions.append(transaction)
-
-        print()
-        print("Binance file read:")
-        for transaction in transactions:
-            print(transaction)
-        print()
         
         return transactions
 
@@ -185,13 +179,7 @@ class CoinbaseReader:
             transaction = [date_formatted, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
             transactions.append(transaction)
         
-        print()
-        print("Coinbase file read:")
-        for transaction in transactions:
-            print(transaction)
-        print()
-        
-        return None
+        return transactions
 
 # ...
 
@@ -291,17 +279,19 @@ def get_time_format():
 
 ### Testing ###
 
-files = get_files()
-readers = get_readers()
+# files = get_files()
+# readers = get_readers()
+
 # exchange = files[0][0]      # Binance file
 # file_path = files[0][1]
 # exchange = files[1][0]      # Coinbase file
 # file_path = files[1][1]
 # print(exchange)
-for files in files:
-    exchange = files[0]
-    file_path = files[1]
-    read_file(readers[exchange], file_path)
+
+# for files in files:
+#     exchange = files[0]
+#     file_path = files[1]
+#     read_file(readers[exchange], file_path)
     
 # read_file(readers[exchange], file_path)
 
