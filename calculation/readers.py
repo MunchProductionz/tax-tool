@@ -119,20 +119,7 @@ class CoinbaseReader:
         time_format = get_time_format()
         number_of_rows_skipped = 7
 
-        processed_lines = []
-
-        with open(file_path, 'r') as file:
-            for _ in range(number_of_rows_skipped):
-                next(file)
-
-            for line in file:
-                if line.startswith('"') and line.endswith('"\n'):
-                    line = line[1:-2] + '\n'    # Removes ""
-                line = line.replace('""', '"')
-                processed_lines.append(line)
-
-        cleaned_data = ''.join(processed_lines)
-        cleaned_string_buffer = io.StringIO(cleaned_data)
+        cleaned_string_buffer = get_cleaned_string_buffer(file_path, number_of_rows_skipped=number_of_rows_skipped)
         data = pd.read_csv(cleaned_string_buffer)
         
         # Columns:
@@ -235,6 +222,25 @@ def get_first_currency(market):
             first_currency = market[:ticker]
     
     return first_currency    # TODO: Handle when ticker is invalid
+
+def get_cleaned_string_buffer(file_path, number_of_rows_skipped=7):
+        
+        processed_lines = []
+
+        with open(file_path, 'r') as file:
+            for _ in range(number_of_rows_skipped):
+                next(file)
+
+            for line in file:
+                if line.startswith('"') and line.endswith('"\n'):
+                    line = line[1:-2] + '\n'    # Removes ""
+                line = line.replace('""', '"')
+                processed_lines.append(line)
+
+        cleaned_data = ''.join(processed_lines)
+        cleaned_string_buffer = io.StringIO(cleaned_data)
+        
+        return cleaned_string_buffer
 
 def get_currency_from_end_of_note(note):
     
