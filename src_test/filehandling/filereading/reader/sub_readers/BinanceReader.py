@@ -3,16 +3,16 @@ import pandas as pd
 # BinanceReader
 class BinanceReader:
 
+    def __init__(self):
+        self.time_format = self.get_time_format()
+
     def read_file(self, file_path):
         
-        time_format = self.get_time_format()
+        time_format = self.time_format
         
         # Excel
-        # uncleaned_data = pd.read_excel(filedata)      # TODO: Implement if possible to input file
         uncleaned_data = pd.read_excel(r'' + file_path + '')
         cleaned_data = uncleaned_data[["Date", "Market", "Type", "Price", "Amount", "Total"]]
-        
-        print(cleaned_data.head())
         
         transactions = []
         
@@ -43,10 +43,6 @@ class BinanceReader:
             
             transaction = [date_formatted, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
             transactions.append(transaction)
-
-        # Read filedata
-        # Put data into transactions-format
-        # Return transactions
         
         return transactions
     

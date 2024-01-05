@@ -1,26 +1,37 @@
 import requests
+import json
+import os
 import bs4 as BeautifulSoup
 import pandas as pd
-from variables import VariablesHolder
+from io import StringIO
+from dotenv import load_dotenv
+from utils import VariablesHolder
 
 class PriceRetriever:
     
-    def get_price(self, date, ticker, fiat):
+    def __init__(self):
+        self.utils = VariablesHolder()
+    
+    def get_price(self, date, ticker, fiat) -> float:
 
         # Error handling
-        if not self.isValidCurrency(ticker): return None     # TODO: Add actual error handling
-        if not self.isValidCurrency(fiat): return None       # TODO: Add actual error handling
+        if not self.utils.isValidCurrency(ticker): return None     # TODO: Add actual error handling
+        if not self.utils.isValidCurrency(fiat): return None       # TODO: Add actual error handling
 
         # Get average USD price of currency
-        if self.isUSDollar(ticker):
+        if self.utils.isUSDollar(ticker):
             average_USD_price = 1
-        elif self.isFiat(ticker):
+        elif self.utils.isFiat(ticker):
             average_USD_price = self.get_fiat_to_USD_conversion_rate(date, ticker)
         else:
-            average_USD_price = self.get_average_USD_price_crypto(date, ticker)
+            if self.is_average_USD_price_crypto_stored_locally(date, ticker):
+                average_USD_price = self.get_average_USD_price_crypto_locally(date, ticker)
+            else:
+                average_USD_price, market_data_USD = self.get_average_USD_price_crypto_API(date, ticker)
+                self.add_coin_market_data_USD(ticker, date, market_data_USD)
 
         # Get fiat to USD conversion rate at date
-        if self.isUSDollar(fiat):
+        if self.utils.isUSDollar(fiat):
             fiat_price = average_USD_price
             return fiat_price
         
@@ -28,17 +39,59 @@ class PriceRetriever:
 
         # Get fiat_price of currency on input date
         fiat_price = average_USD_price * USD_to_fiat_conversion_rate
-        print(f'{fiat}: {str(fiat_price)}')
 
         return fiat_price
     
-    def get_fiat_to_USD_conversion_rate(self, date, fiat):
+    
+    ### Retrieval Methods ###
+    
+    def get_average_USD_price_crypto_API(self, date, ticker) -> tuple(float, dict):
+    
+        # Get CoinGecko API key
+        load_dotenv()
+        api_key = os.environ["COINGECKO_API_KEY"]
+        
+        # Get the id of the currency
+        supported_coins = self.get_supported_coins()
+        currency = self.utils.cryptocurrencies_full_names[ticker]
+        currency_id = supported_coins[currency]
+        
+        # Format date
+        formatted_date = date.strftime("%d-%m-%Y")
+        
+        # Send a GET request: /coins/{id}/history endpoint
+        url = "https://api.coingecko.com/api/v3/coins/" + currency_id + "/history?date=" + formatted_date + "&x_cg_demo_api_key=" + api_key
+        response = requests.get(url)
+        response_json = json.loads(response.text)
+        
+        average_price = response_json["market_data"]["current_price"]["usd"]
+        market_data_USD = {
+                "current_price": response_json["market_data"]["current_price"]["usd"],
+                "market_cap": response_json["market_data"]["market_cap"]["usd"],
+                "total_volume": response_json["market_data"]["total_volume"]["usd"],
+            }
+        
+        return average_price, market_data_USD
+
+    def get_average_USD_price_crypto_locally(self, date, ticker) -> float:
+
+        with open(f'coin_data/coins_market_data.json', "r") as f:
+            data = json.load(f)
+            formatted_date = date.strftime("%Y-%m-%d")
+            average_price = data[ticker][formatted_date]["current_price"]
+        
+        return average_price
+
+    def get_fiat_to_USD_conversion_rate(self, date, fiat) -> float:
         
         # Get fiat currency
-        fiat_currency = VariablesHolder().get_fiat_currencies_full_names()[fiat]
+        fiat_currency = self.utils.fiat_currencies_full_names[fiat]
+        
+        # Format date
+        formatted_date = date.strftime("%Y-%m-%d")
         
         # Send a GET request
-        url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + date
+        url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + formatted_date
         response = requests.get(url)
         
         # Parse the HTML content
@@ -48,7 +101,7 @@ class PriceRetriever:
         table = soup.find('table', {'class': "tablesorter ratesTable"})
 
         # Convert to pandas dataframe
-        df_table = pd.read_html(str(table))[0]
+        df_table = pd.read_html(StringIO(str(table)))[0]
         
         # Clean the data
         df_table_currency = df_table['US Dollar']
@@ -56,46 +109,17 @@ class PriceRetriever:
         fiat_to_USD_conversion_rate = df_table["inv. 1.00 USD"].iloc[0]
         
         return fiat_to_USD_conversion_rate
-    
-    def get_average_USD_price_crypto(self, date, ticker):
-    
-        # Use ticker to get name of currency
-        currencies_full_names_lowercase = self.convert_values_to_lowercase(VariablesHolder().get_cryptocurrencies_full_names())
-        currency = currencies_full_names_lowercase[ticker]
-        
-        # Get start and end date
-        start_date = self.get_start_date_string(date)
-        end_date = self.get_end_date_string(start_date)
-        
-        # Send a GET request
-        url = "https://www.coingecko.com/en/coins/" + currency + "/historical_data/?start_date=" + start_date + "&end_date=" + end_date + "#panel"
-        response = requests.get(url)
-        
-        # Parse the HTML content
-        soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Find the table containing the historical price data
-        table = soup.find('table', {'class': "table table-striped text-sm text-lg-normal"})
-
-        # Convert to pandas dataframe
-        df_table = pd.read_html(str(table))
-        
-        # Clean the data
-        opening_price_usd = df_table[0]["Open"][1]
-        closing_price_usd = df_table[0]["Close"][1]
-        
-        # Calculate average daily price
-        average_price = self.get_average_price(opening_price_usd, closing_price_usd)
-        
-        return average_price
-
-    def get_USD_to_fiat_conversion_rate(self, date, fiat):
+    def get_USD_to_fiat_conversion_rate(self, date, fiat) -> float:
         
         # Get fiat currency
-        fiat_currency = VariablesHolder().get_fiat_currencies_full_names()[fiat]
+        fiat_currency = self.utils.fiat_currencies_full_names[fiat]
+        
+        # Format date
+        formatted_date = date.strftime("%Y-%m-%d")
         
         # Send a GET request
-        url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + date
+        url = "https://www.x-rates.com/historical/?from=USD&amount=1&date=" + formatted_date
         response = requests.get(url)
         
         # Parse the HTML content
@@ -105,7 +129,7 @@ class PriceRetriever:
         table = soup.find('table', {'class': "tablesorter ratesTable"})
 
         # Convert to pandas dataframe
-        df_table = pd.read_html(str(table))[0]
+        df_table = pd.read_html(StringIO(str(table)))[0]
         
         # Clean the data
         df_table_currency = df_table['US Dollar']
@@ -115,80 +139,48 @@ class PriceRetriever:
         return USD_to_fiat_conversion_rate
     
 
-
     ### Helper Methods ###
 
-    def get_start_date_string(self, date):
+    def get_supported_coins(self) -> dict:
+    
+        # Format: {ticker: name}
+        with open('coin_data/supported_coins.json') as json_file:
+            coins_dictionary = json.load(json_file)
         
-        # Example:
-        # - date = 2022-11-15
-        # - start_date_string = 20221115
-        
-        date_string = date.replace("-", "")
-        
-        return date_string
+        return coins_dictionary
 
-    def get_end_date_string(self, date_string):
-        
-        # Example:
-        # - date_string = 20221115
-        # - end_date_string = 20221116
-
-        year = date_string[:4]
-        month = date_string[4:6]
-        day = date_string[6:]
-
-        if self.isNewYear(month, day):
-            next_year = str(int(year) + 1)
-            next_month = '01'
-            next_day = '01'
-            end_date_string = next_year + next_month + next_day
-        elif self.isNewMonth(month, day):
-            if int(month) < 9:
-                next_month = '0' + str(int(month) + 1)
-            else:
-                next_month = str(int(month) + 1)
-            next_day = '01'
-            end_date_string = year + next_month + next_day
-        else:
-            if int(day) < 9:
-                next_day = '0' + str(int(day) + 1)
-            else:
-                next_day = str(int(day) + 1)
-            end_date_string = year + month + next_day
-            
-        return end_date_string
-
-    def isNewYear(self, month, day):
-        
-        if self.isNewMonth(month, day):
-            if month == '12':
-                print('New Year')
+    def is_average_USD_price_crypto_stored_locally(self, date, ticker) -> bool:
+    
+        with open(f'coin_data/coins_market_data.json', "r") as f:
+            data = json.load(f)
+            if ticker in data and date.strftime("%Y-%m-%d") in data[ticker]:
                 return True
-            
-        return False
+            else:
+                return False
 
-    def isNewMonth(self, month, day):
+    def add_coin_market_data_USD(self, ticker, date, market_data_USD) -> None:
+    
+        # Handle when market data does not exist
+        if market_data_USD == None:
+            return None
         
-        if day == VariablesHolder().days_in_months()[month]:
-            return True
+        date_string = date.strftime("%Y-%m-%d")
         
-        return False
-
-    def get_average_price(self, opening_price_string, closing_price_string):
-        
-        opening_price_int = self.get_price_int(opening_price_string)
-        closing_price_int = self.get_price_int(closing_price_string)
-        
-        return (opening_price_int + closing_price_int) / 2
-
-    def get_price_int(self, price_string):
-        
-        # TODO: Fix to fully account for floats (it currently removes everything after '.')
-        price_string_no_dollar_sign = price_string.replace('$', '')
-        price_string_no_comma = price_string_no_dollar_sign.replace(',', '')
-        if '.' in price_string_no_comma:
-            price_string_no_comma = price_string_no_comma[:price_string_no_comma.index('.')]
-        price_int = int(price_string_no_comma)
-        
-        return price_int
+        # Currency does/does not exist, date does not exist
+        try:
+            with open(f'coin_data/coins_market_data.json', "r") as f:
+                data = json.load(f)
+                if ticker not in data:
+                    data[ticker] = {}
+                data[ticker][date_string] = market_data_USD
+                new_data = json.dumps(data, indent=4)
+            with open(f'coin_data/coins_market_data.json', "w") as f:
+                f.write(new_data)
+        # File does not exist
+        except FileNotFoundError:
+            with open(f'coin_data/coins_market_data.json', "w") as f:
+                data = {}
+                data[ticker] = {}
+                data[ticker][date_string] = market_data_USD
+                new_data = json.dumps(data, indent=4)
+                f.write(new_data)

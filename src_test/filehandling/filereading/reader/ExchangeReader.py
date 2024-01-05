@@ -1,13 +1,21 @@
-
+from BinanceReader import BinanceReader
+from CoinbaseReader import CoinbaseReader
 
 # Contains all exchange readers
 class ExchangeReaders:
+    
+    def __init__(self):
+        # self.readers = self.get_readers()         # TODO: Use this?
+        self.reader = {                             # TODO: Or use this?
+            "Binance": BinanceReader(),
+            "Coinbase": CoinbaseReader()
+        }
     
      # Get reader
     def get_reader(self, exchange):
 
         # Get readers
-        readers = self.get_readers()
+        readers = self.readers
 
         # Validations
         if not self.isValidExchange(exchange): return None                       # TODO: Fix error handling
@@ -24,7 +32,7 @@ class ExchangeReaders:
     ## Help methods ##
     def isValidExchange(self, exchange):
         
-        readers = self.get_readers()
+        readers = self.readers
         
         for reader_exchange in readers:
             if exchange == reader_exchange: return True

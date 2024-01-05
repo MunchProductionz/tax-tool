@@ -4,8 +4,14 @@ from datastructures import Queue
 
 class ExcelWriter:
     
-    # Cleaned transactions: [transaction1, transaction2, ...]
-    # Cleaned transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
+    def __init__(self):
+        self.transaction_index = self.get_transaction_index()
+        self.amount_index = self.get_amount_index()
+        self.column_index = self.get_column_index()
+        self.orders = self.get_orders()
+    
+    # Transactions: [transaction1, transaction2, ...]
+    # Transaction: [date, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
 
     # Transaction_profits: {[currency]: [date, profit], ...}
     # Currency_profits: {[currency]: profit, ...}
@@ -45,7 +51,7 @@ class ExcelWriter:
     def write_transactions_sheet(self, sheet, transactions, transactions_profits, format):
         
         # Get indexes
-        transaction_index = self.get_transaction_index()
+        transaction_index = self.transaction_index
         
         # Write headers
         sheet.write('B2', "Transactions", format["sheet_header"])
@@ -151,9 +157,9 @@ class ExcelWriter:
         # TODO: Allow for initial asset inputs?
         
         # Get indexes
-        amount_index = self.get_amount_index()
-        column_index = self.get_column_index()
-        transaction_index = self.get_transaction_index()
+        amount_index = self.amount_index
+        column_index = self.column_index
+        transaction_index = self.transaction_index
         
         # Write headers
         sheet.write('B2', "Assets", format["sheet_header"])

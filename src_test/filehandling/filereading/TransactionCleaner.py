@@ -1,6 +1,9 @@
-from readers import ExchangeReaders
+from ExchangeReaders import ExchangeReaders
 
 class TransactionCleaner:
+    
+    def __init__(self):
+        self.exchange_readers = ExchangeReaders()
     
     def get_transactions_from_files(self, files):
 
@@ -16,18 +19,17 @@ class TransactionCleaner:
             exchange = file[index_exchange]
             file_path = file[index_file_path]
             file_transactions = self.get_transactions_from_file(exchange, file_path)
-            transactions.append(file_transactions)                      # TODO: Check that transactions are merged
+            if file_transactions is not None:
+                transactions += file_transactions
+            else:
+                print("Error: No transactions found in " + file_path)
 
         return transactions
     
     def get_transactions_from_file(self, exchange, file_path):
 
-        # Get reader
-        reader = ExchangeReaders().get_reader(exchange)
-
-        print(file_path)
-
-        # Read file
-        transactions = ExchangeReaders().read_file(reader, file_path)
+        # Get reader and read file
+        reader = self.exchange_readers.get_reader(exchange)
+        transactions = self.exchange_readers.read_file(reader, file_path)
 
         return transactions

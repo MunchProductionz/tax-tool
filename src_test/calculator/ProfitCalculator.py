@@ -1,7 +1,12 @@
 from price_retriever import PriceRetriever
+from utils import VariablesHolder
 from datastructures import Queue, Stack
 
 class ProfitCalculator:
+    
+    def __init__(self):
+        self.utils = VariablesHolder()
+        self.price_retriever = PriceRetriever()
     
     def calculate_profit(self, transactions, order, fiat):
 
@@ -72,8 +77,8 @@ class ProfitCalculator:
                 index_transaction = len(currency_transaction_profits[currency_sold]) - 1
 
                 # Get price of currency sold and bought
-                fiat_price_of_currency_sold = PriceRetriever().get_price(date, currency_sold, fiat)
-                fiat_price_of_currency_bought = PriceRetriever().get_price(date, currency_bought, fiat)
+                fiat_price_of_currency_sold = self.price_retriever.get_price(date, currency_sold, fiat)
+                fiat_price_of_currency_bought = self.price_retriever.get_price(date, currency_bought, fiat)
 
                 # Update amount and profit of currency sold
                 temporary_amount_sold = amount_sold

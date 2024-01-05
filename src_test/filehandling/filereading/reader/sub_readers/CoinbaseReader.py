@@ -1,68 +1,83 @@
 import pandas as pd
+from io import StringIO
+from datetime import datetime
 
 # CoinbaseReader
 class CoinbaseReader:
 
+    def __init__(self):
+        self.currencies = self.get_currencies()
+        self.time_format = self.get_time_format()
+
     def read_file(self, file_path):
         
-        time_format = self.get_time_format()
+        time_format = self.time_format
         number_of_rows_skipped = 7
-        
-        # TODO: Implement regex (optional) to remove " " around rows. (Can't read CSV with open())
-        # TODO: Verify with updated testfile that formatting is correct.
-        
-        # CSV
-        uncleaned_data = pd.read_csv(r'' + file_path + '', delimiter=',', quotechar='"', skiprows=number_of_rows_skipped)
-        
-        # cleaned_data = uncleaned_data[["Date(UTC)"]]
-        cleaned_data = uncleaned_data[["Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "USD Spot Price at Transaction", "USD Subtotal"]]
-        
-        print(cleaned_data.head())
-        
+
+        cleaned_string_buffer = self.get_cleaned_string_buffer(file_path, number_of_rows_skipped=number_of_rows_skipped)
+        data = pd.read_csv(cleaned_string_buffer)
         
         transactions = []
         
-        for row in range(len(cleaned_data)):
-            date = cleaned_data["Date"].loc[row]
-            date_formatted = date.strftime(time_format)
-            type = cleaned_data["Transaction Type"].loc[row]
-            note = cleaned_data["Notes"].loc[row]
+        for row in range(len(data)):
+            date = data["Timestamp"].loc[row]
+            date_formatted = datetime.strptime(date, time_format)
+            transaction_type = data["Transaction Type"].loc[row]
+            note = data["Notes"].loc[row]
             second_currency = self.get_currency_from_end_of_note(note)
             
-            if type == 'SELL':
-                currency_sold = cleaned_data["Asset"].loc[row]
-                price_sold = cleaned_data["USD Spot Price at Transaction"].loc[row]
-                amount_sold = cleaned_data["Quantity Transacted"].loc[row]
+            if transaction_type == 'Sell':
+                currency_sold = data["Asset"].loc[row]
+                price_sold = data["Spot Price at Transaction"].loc[row]
+                amount_sold = data["Quantity Transacted"].loc[row]
                 
                 currency_bought = second_currency
                 price_bought = 1 / price_sold
                 amount_bought = self.get_amount_from_end_of_note(note)
-            elif type == 'BUY':
-                currency_bought = cleaned_data["Asset"].loc[row]
-                price_bought = cleaned_data["USD Spot Price at Transaction"].loc[row]
-                amount_bought = cleaned_data["Quantity Transacted"].loc[row]
+            elif transaction_type == 'Buy':
+                currency_bought = data["Asset"].loc[row]
+                price_bought = data["Spot Price at Transaction"].loc[row]
+                amount_bought = data["Quantity Transacted"].loc[row]
                 
                 currency_sold = second_currency
                 price_sold = 1 / price_bought
                 amount_sold = self.get_amount_from_end_of_note(note)
             else:
-                break
+                # Ignore 'Send' and 'Receive'
+                continue
             
             transaction = [date_formatted, currency_sold, amount_sold, price_sold, currency_bought, amount_bought, price_bought]
             transactions.append(transaction)
-
-
-        # Read filedata
-        # Put data into transactions-format
-        # Return transactions
         
-        return None
+        return transactions
     
     
     ## Help methods ##
+    
+    def get_cleaned_string_buffer(self, file_path, number_of_rows_skipped=7):
+        
+        processed_lines = []
+
+        with open(file_path, 'r') as file:
+            for _ in range(number_of_rows_skipped):
+                next(file)
+
+            for line in file:
+                if line.startswith('"') and line.endswith('"\n'):
+                    line = line[1:-2] + '\n'    # Removes ""
+                line = line.replace('""', '"')
+                processed_lines.append(line)
+
+        cleaned_data = ''.join(processed_lines)
+        cleaned_string_buffer = StringIO(cleaned_data)
+        
+        return cleaned_string_buffer
+        
+        
+    
     def get_currency_from_end_of_note(self, note):
     
-        currencies = self.get_currencies()
+        currencies = self.currencies
         currency = None
         
         for ticker in range(len(note)-1, 1, -1):
